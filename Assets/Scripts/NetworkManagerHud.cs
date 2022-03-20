@@ -14,7 +14,7 @@ public class NetworkManagerHud : MonoBehaviour
 
     GUIStyle m_LabelTextStyle;
 
-    // This is needed to make the port field more convenient. GUILayout.TextField is very limited and we want to be able to clear the field entirely so we can't cache this as ushort.
+    // GUILayout.TextField is very limited and we want to be able to clear the field entirely so we can't cache this as ushort.
     string m_PortString = "7777";
     string m_ConnectAddress = "127.0.0.1";
 
@@ -24,7 +24,7 @@ public class NetworkManagerHud : MonoBehaviour
 
     void Awake()
     {
-        // Only cache networking manager but not transport here because transport could change anytime.
+        // Only cache networking manager but not transport
         m_NetworkManager = GetComponent<NetworkManager>();
         m_LabelTextStyle = new GUIStyle(GUIStyle.none);
     }
@@ -49,7 +49,7 @@ public class NetworkManagerHud : MonoBehaviour
         GUILayout.EndArea();
     }
 
-    void DrawConnectGUI()
+    void DrawConnectGUI()// GUI wrapper for network manager methods
     {
         GUILayout.BeginHorizontal();
         GUILayout.Space(10);
