@@ -10,7 +10,7 @@ public class PlayerControlMul : NetworkBehaviour{
     NetworkObjectPool m_ObjectPool;
     public GameObject BulletPrefab;
 
-    public Vector2 speed=new Vector2(5,5);
+    public float speed=5;
 
     float m_InputX;
     float m_InputY;
@@ -53,14 +53,18 @@ public class PlayerControlMul : NetworkBehaviour{
     void UpdateServer(){
         //movement
         //Time.deltaTime - the interval in seconds from the last frame to the current one
-        Vector3 movement = new Vector3(speed.x * m_InputX, speed.y * m_InputY, 0);
+        Vector3 movement = new Vector3(m_InputX, m_InputY, 0);
+        movement.Normalize();
+        movement *= speed;
         movement *= Time.deltaTime;
+        float rotation = m_Rigidbody2D.rotation;
+        movement=Quaternion.Euler(0, 0, -rotation)*movement;
+        //movement is rotated by the opposite of player orientation to realign with absolute directions 
         m_Rigidbody2D.transform.Translate(movement);
 
         //rotation
         float angle = Vector2.SignedAngle(Vector2.up, m_Direction);
         m_Rigidbody2D.transform.eulerAngles = new Vector3 (0, 0, angle);
-
     }
 
     void UpdateClient(){
