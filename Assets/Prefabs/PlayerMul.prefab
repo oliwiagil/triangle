@@ -140,12 +140,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: decafda160f8a8d4c8e6bc6845450c85, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SpeedBuffTimer:
-    m_InternalValue: 0
-  RotateBuffTimer:
-    m_InternalValue: 0
-  m_Box: {fileID: 0}
+  BulletPrefab: {fileID: 100000, guid: 26e8740d898c8544b984097438d483c0, type: 3}
   speed: {x: 5, y: 5}
+  fireRate: 0.25
+  bulletForce: 8
 --- !u!114 &509584576524893815
 MonoBehaviour:
   m_ObjectHideFlags: 0

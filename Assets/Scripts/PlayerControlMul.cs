@@ -4,10 +4,11 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class PlayerMulControl : NetworkBehaviour{
+public class PlayerControlMul : NetworkBehaviour{
     static string s_ObjectPoolTag = "ObjectPool";
 
     NetworkObjectPool m_ObjectPool;
+    public GameObject BulletPrefab;
 
     public Vector2 speed=new Vector2(5,5);
 
@@ -17,6 +18,10 @@ public class PlayerMulControl : NetworkBehaviour{
     float m_OldInputX=0;
     float m_OldInputY=0;
     Vector2 m_OldDirection=new Vector2(0,0);
+
+    private float nextFire = 0;
+    public float fireRate= 0.25f;
+    public float bulletForce=8;
 
     Rigidbody2D m_Rigidbody2D;
 
@@ -76,8 +81,15 @@ public class PlayerMulControl : NetworkBehaviour{
             m_OldInputX = inputX;
             m_OldInputY = inputY;
         }
+
+        // fire
+        if (Input.GetMouseButton(0) && Time.time > nextFire) {
+            nextFire = Time.time + fireRate;
+            FireServerRpc();
+        }
         
     }
+
 
     // done on server
     [ServerRpc]
@@ -87,5 +99,20 @@ public class PlayerMulControl : NetworkBehaviour{
         m_InputX = inputX;
         m_InputY = inputY;
     }
+
+    [ServerRpc]
+    public void FireServerRpc()
+    {
+        GameObject bullet = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
+        bullet.transform.position = transform.position;
+        bullet.transform.rotation = transform.rotation;
+        
+        Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+        rb.AddForce(transform.up * bulletForce, ForceMode2D.Impulse);
+        Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(),  GetComponent<Collider2D>());
+
+        bullet.GetComponent<NetworkObject>().Spawn(true);
+    }
+    
 
 }
