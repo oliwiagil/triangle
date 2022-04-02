@@ -22,7 +22,8 @@ public class PlayerControlMul : NetworkBehaviour{
     private float nextFire = 0;
     public float fireRate= 0.25f;
     public float bulletForce=8;
-
+    [SerializeField]
+    public NetworkVariable<FixedString32Bytes> PlayerName = new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
     Rigidbody2D m_Rigidbody2D;
 
     void Awake(){
@@ -33,6 +34,7 @@ public class PlayerControlMul : NetworkBehaviour{
     
     void Start(){
         DontDestroyOnLoad(gameObject);
+        SetNameServerRpc($"Player{OwnerClientId}");
     }
 
     void Update(){
@@ -117,6 +119,22 @@ public class PlayerControlMul : NetworkBehaviour{
 
         bullet.GetComponent<NetworkObject>().Spawn(true);
     }
-    
 
+    void OnGUI()
+    {
+        Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
+
+        GUI.color = Color.black;
+        GUI.Label(new Rect(pos.x - 20, Screen.height - pos.y - 30, 400, 30), PlayerName.Value.Value);
+
+        GUI.color = Color.white;
+
+        GUI.Label(new Rect(pos.x - 21, Screen.height - pos.y - 31, 400, 30), PlayerName.Value.Value);
+
+    }
+    [ServerRpc]
+    public void SetNameServerRpc(string name)
+    {
+        PlayerName.Value = name;
+    }
 }
