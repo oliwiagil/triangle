@@ -7,6 +7,7 @@ TagManager:
   - Bullet
   - Enemy
   - ObjectPool
+  - Barier
   layers:
   - Default
   - TransparentFX

@@ -72,7 +72,7 @@ public class NetworkManagerHud : MonoBehaviour
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
-        GUILayout.Label("Port", m_LabelTextStyle);
+        GUILayout.Label("Name", m_LabelTextStyle);
         m_PlayerName = GUILayout.TextField(m_PlayerName, 15, m_TextFieldStyle); //I GIVE UP, I have no idea how to set it 
         GUILayout.EndHorizontal();
         
