@@ -22,7 +22,7 @@ public class PlayerControlMul : NetworkBehaviour{
     private float nextFire = 0;
     public float fireRate= 0.25f;
     public float bulletForce=8;
-
+    public NetworkVariable<FixedString32Bytes> PlayerName = new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
     Rigidbody2D m_Rigidbody2D;
 
     void Awake(){
@@ -33,6 +33,7 @@ public class PlayerControlMul : NetworkBehaviour{
     
     void Start(){
         DontDestroyOnLoad(gameObject);
+        PlayerName.Value = $"Player{OwnerClientId}";
     }
 
     void Update(){
