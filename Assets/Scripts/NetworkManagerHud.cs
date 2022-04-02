@@ -13,10 +13,12 @@ public class NetworkManagerHud : MonoBehaviour
     UnityTransport m_Transport;
 
     GUIStyle m_LabelTextStyle;
+    GUIStyle m_TextFieldStyle;
 
     // GUILayout.TextField is very limited and we want to be able to clear the field entirely so we can't cache this as ushort.
     string m_PortString = "7777";
     string m_ConnectAddress = "127.0.0.1";
+    string m_PlayerName="NamePlaceHolder";
 
     public Vector2 DrawOffset = new Vector2(10, 10);
 
@@ -32,6 +34,14 @@ public class NetworkManagerHud : MonoBehaviour
     void OnGUI()
     {
         m_LabelTextStyle.normal.textColor = LabelColor;
+        m_LabelTextStyle.alignment = TextAnchor.MiddleLeft;
+        m_LabelTextStyle.fixedWidth = 75;
+        m_LabelTextStyle.fixedHeight = 20;
+        
+        m_TextFieldStyle = new GUIStyle(GUI.skin.textField);
+        m_TextFieldStyle.alignment = TextAnchor.MiddleCenter;
+        m_TextFieldStyle.fixedWidth = 115;
+        m_TextFieldStyle.fixedHeight = 20;
 
         m_Transport = (UnityTransport) m_NetworkManager.NetworkConfig.NetworkTransport;
 
@@ -52,16 +62,22 @@ public class NetworkManagerHud : MonoBehaviour
     void DrawConnectGUI()// GUI wrapper for network manager methods
     {
         GUILayout.BeginHorizontal();
-        GUILayout.Space(10);
         GUILayout.Label("Address", m_LabelTextStyle);
+        m_ConnectAddress = GUILayout.TextField(m_ConnectAddress,15,m_TextFieldStyle);
+        GUILayout.EndHorizontal();
+        
+        GUILayout.BeginHorizontal();
         GUILayout.Label("Port", m_LabelTextStyle);
-
+        m_PortString = GUILayout.TextField(m_PortString,4,m_TextFieldStyle);
         GUILayout.EndHorizontal();
 
         GUILayout.BeginHorizontal();
+        GUILayout.Label("Port", m_LabelTextStyle);
+        m_PlayerName = GUILayout.TextField(m_PlayerName, 15, m_TextFieldStyle);
+        GUILayout.EndHorizontal();
+        
+        GUILayout.BeginHorizontal();
 
-        m_ConnectAddress = GUILayout.TextField(m_ConnectAddress);
-        m_PortString = GUILayout.TextField(m_PortString);
         if (ushort.TryParse(m_PortString, out ushort port))
         {
             m_Transport.SetConnectionData(m_ConnectAddress, port);
