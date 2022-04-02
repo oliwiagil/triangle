@@ -1,6 +1,7 @@
 ﻿using System;
 using Unity.Collections;
 using Unity.Netcode;
+using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
 
@@ -112,7 +113,7 @@ public class PlayerControlMul : NetworkBehaviour{
         GameObject bullet = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
         bullet.transform.position = transform.position;
         bullet.transform.rotation = transform.rotation;
-        
+        Debug.Log(transform.rotation);
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
         rb.AddForce(transform.up * bulletForce, ForceMode2D.Impulse);
         Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(),  GetComponent<Collider2D>());
