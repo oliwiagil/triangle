@@ -73,7 +73,7 @@ public class NetworkManagerHud : MonoBehaviour
 
         GUILayout.BeginHorizontal();
         GUILayout.Label("Port", m_LabelTextStyle);
-        m_PlayerName = GUILayout.TextField(m_PlayerName, 15, m_TextFieldStyle);
+        m_PlayerName = GUILayout.TextField(m_PlayerName, 15, m_TextFieldStyle); //I GIVE UP, I have no idea how to set it 
         GUILayout.EndHorizontal();
         
         GUILayout.BeginHorizontal();
@@ -86,7 +86,6 @@ public class NetworkManagerHud : MonoBehaviour
         {
             m_Transport.SetConnectionData(m_ConnectAddress, 7777);
         }
-
         GUILayout.EndHorizontal();
 
         if (GUILayout.Button("Host (Server + Client)"))

@@ -34,10 +34,7 @@ public class PlayerControlMul : NetworkBehaviour{
     
     void Start(){
         DontDestroyOnLoad(gameObject);
-        if (IsServer)
-        {
-            PlayerName.Value = $"Player{OwnerClientId}";
-        }
+        SetNameServerRpc($"Player{OwnerClientId}");
     }
 
     void Update(){
@@ -127,7 +124,6 @@ public class PlayerControlMul : NetworkBehaviour{
     {
         Vector3 pos = Camera.main.WorldToScreenPoint(transform.position);
 
-        // draw the name with a shadow (colored for buf)	
         GUI.color = Color.black;
         GUI.Label(new Rect(pos.x - 20, Screen.height - pos.y - 30, 400, 30), PlayerName.Value.Value);
 
@@ -135,5 +131,10 @@ public class PlayerControlMul : NetworkBehaviour{
 
         GUI.Label(new Rect(pos.x - 21, Screen.height - pos.y - 31, 400, 30), PlayerName.Value.Value);
 
+    }
+    [ServerRpc]
+    public void SetNameServerRpc(string name)
+    {
+        PlayerName.Value = name;
     }
 }
