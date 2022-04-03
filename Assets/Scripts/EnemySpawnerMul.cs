@@ -5,7 +5,7 @@ using UnityEngine;
 using Random = System.Random;
 
 public class EnemySpawnerMul : NetworkBehaviour{
-    public GameObject enemy;
+    private GameObject enemy;
     public float spawnDelay;
     public float spawnTime;
     NetworkManager m_NetworkManager;
