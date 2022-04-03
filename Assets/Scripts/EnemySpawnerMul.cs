@@ -5,7 +5,7 @@ using UnityEngine;
 using Random = System.Random;
 
 public class EnemySpawnerMul : NetworkBehaviour{
-    public GameObject enemy;
+    private GameObject enemy;
     public float spawnDelay;
     public float spawnTime;
     NetworkManager m_NetworkManager;
@@ -28,7 +28,10 @@ public class EnemySpawnerMul : NetworkBehaviour{
             new Vector3(random.Next((int) -range,(int) range)/range*scale,random.Next((int) -range,(int) range)/range*scale,0), new Quaternion(0,0,0,0)).gameObject;
         
         Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
-        rb.AddForce(transform.up * 1, ForceMode2D.Impulse);
+        Vector3 v = new Vector3(random.Next((int) -range, (int) range) / range * scale,
+            random.Next((int) -range, (int) range) / range * scale, 0);
+        v.Normalize();
+        rb.AddForce(v * 1, ForceMode2D.Impulse);
 
         enemy.GetComponent<NetworkObject>().Spawn(true);
     }
