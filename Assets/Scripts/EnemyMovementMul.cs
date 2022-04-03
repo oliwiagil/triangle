@@ -7,10 +7,19 @@ using Random = System.Random;
 public class EnemyMovementMul : NetworkBehaviour
 {
     public NetworkVariable<int> health = new NetworkVariable<int>();
+    private Random random;
+    private float scale = 10f;
+    private float range = 256;
+
+	void Awake()
+	{
+		random = new Random();
+	}
 
     void Start()
     {
         SetHpServerRpc();
+		InvokeRepeating("ChangeMovement", 0, 3);
     }
     
     private void DestroyEnemy()
@@ -20,7 +29,6 @@ public class EnemyMovementMul : NetworkBehaviour
         //stupid but works 
         SetHpServerRpc();
         NetworkObject.Despawn();
-        
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -30,7 +38,6 @@ public class EnemyMovementMul : NetworkBehaviour
         if (other.gameObject.CompareTag("Bullet"))
         {
             DecreaseHpServerRpc();
-            Debug.Log("bullet " + health.Value);
             if (health.Value <= 0)
             {
                 DestroyEnemy();
@@ -52,6 +59,21 @@ public class EnemyMovementMul : NetworkBehaviour
     void SetHpServerRpc()
     {
         health.Value = 3;
-        Debug.Log("my hp: " + health.Value);
     }
+	
+	void ChangeMovement()
+	{
+		if (!NetworkObject.IsSpawned){ return;}
+		ChangeMovementServerRpc();
+	}
+
+	[ServerRpc]
+	void ChangeMovementServerRpc()
+	{		
+		Rigidbody2D rb = NetworkObject.GetComponent<Rigidbody2D>();
+		Vector3 v = new Vector3(random.Next((int) -range, (int) range) / range * scale,
+        random.Next((int) -range, (int) range) / range * scale, 0);
+    	v.Normalize();
+    	rb.AddForce(v * 1, ForceMode2D.Impulse);
+	}
 }
