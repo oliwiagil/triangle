@@ -156,8 +156,8 @@ MonoBehaviour:
   PooledPrefabsList:
   - Prefab: {fileID: 100000, guid: 26e8740d898c8544b984097438d483c0, type: 3}
     PrewarmCount: 0
-  - Prefab: {fileID: 4933005563524840836, guid: 4ec062b8f64a1a412886aabf7e7d1da7, type: 3}
-    PrewarmCount: 1
+  - Prefab: {fileID: 4933005563524840836, guid: 9641cea516692f3b8ac774a5caa4270c, type: 3}
+    PrewarmCount: 0
 --- !u!4 &371565334
 Transform:
   m_ObjectHideFlags: 0
@@ -468,13 +468,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 1047674413}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 49ccf301e0d044aa8fd291fd62ab561c, type: 3}
+  m_Script: {fileID: 11500000, guid: 4299865e391c2348bbe650645294a7d9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemy: {fileID: 4933005563524840836, guid: 4ec062b8f64a1a412886aabf7e7d1da7, type: 3}
   spawnDelay: 0
   spawnTime: 1
-  EnemyPrefab: {fileID: 4933005563524840836, guid: 4ec062b8f64a1a412886aabf7e7d1da7, type: 3}
+  EnemyPrefab: {fileID: 4933005563524840836, guid: 9641cea516692f3b8ac774a5caa4270c, type: 3}
 --- !u!114 &1047674416
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -751,6 +750,11 @@ MonoBehaviour:
       OverridingTargetPrefab: {fileID: 0}
     - Override: 0
       Prefab: {fileID: 100000, guid: 26e8740d898c8544b984097438d483c0, type: 3}
+      SourcePrefabToOverride: {fileID: 0}
+      SourceHashToOverride: 0
+      OverridingTargetPrefab: {fileID: 0}
+    - Override: 0
+      Prefab: {fileID: 4933005563524840836, guid: 9641cea516692f3b8ac774a5caa4270c, type: 3}
       SourcePrefabToOverride: {fileID: 0}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
