@@ -1,6 +1,6 @@
 # triangle
 
-Should work properly and load all requiered packages if oppened with Unity hub
+Should work properly and load all required packages if opened with Unity hub
 
 
-Preffered way to test multiplayer is to build the project and launch executable for each player
+Preferred way to test multiplayer is to build the project and launch executable for each player
