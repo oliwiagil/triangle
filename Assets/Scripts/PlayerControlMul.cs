@@ -1,51 +1,67 @@
 ﻿using System;
 using Unity.Collections;
 using Unity.Netcode;
-using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Assertions;
 
-public class PlayerControlMul : NetworkBehaviour{
+public class PlayerControlMul : NetworkBehaviour
+{
     static string s_ObjectPoolTag = "ObjectPool";
 
     NetworkObjectPool m_ObjectPool;
     public GameObject BulletPrefab;
 
-    public float speed=5;
+    public float speed = 5;
 
     float m_InputX;
     float m_InputY;
     Vector2 m_Direction;
-    float m_OldInputX=0;
-    float m_OldInputY=0;
-    Vector2 m_OldDirection=new Vector2(0,0);
+    float m_OldInputX = 0;
+    float m_OldInputY = 0;
+    Vector2 m_OldDirection = new Vector2(0, 0);
 
     private float nextFire = 0;
-    public float fireRate= 0.25f;
-    public float bulletForce=8;
+    public float fireRate = 0.25f;
+    public float bulletForce = 8;
+
     [SerializeField]
-    public NetworkVariable<FixedString32Bytes> PlayerName = new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
+    public NetworkVariable<FixedString32Bytes> PlayerName =
+        new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
+
     Rigidbody2D m_Rigidbody2D;
 
-    void Awake(){
+    void Awake()
+    {
         m_Rigidbody2D = GetComponent<Rigidbody2D>();
         m_ObjectPool = GameObject.FindWithTag(s_ObjectPoolTag).GetComponent<NetworkObjectPool>();
-        Assert.IsNotNull(m_ObjectPool, $"{nameof(NetworkObjectPool)} not found in scene. Did you apply the {s_ObjectPoolTag} to the GameObject?");
+        Assert.IsNotNull(m_ObjectPool,
+            $"{nameof(NetworkObjectPool)} not found in scene. Did you apply the {s_ObjectPoolTag} to the GameObject?");
     }
-    
-    void Start(){
+
+    void Start()
+    {
         DontDestroyOnLoad(gameObject);
         SetNameServerRpc($"Player{OwnerClientId}");
     }
 
-    void Update(){
-        if (IsServer){ UpdateServer();}
-        if (IsClient){ UpdateClient();}
+    void Update()
+    {
+        if (IsServer)
+        {
+            UpdateServer();
+        }
+
+        if (IsClient)
+        {
+            UpdateClient();
+        }
     }
 
-    void LateUpdate(){
+    void LateUpdate()
+    {
         //IsLocaPlayer - true if this object is the one that represents the player on the local machine
-        if (IsLocalPlayer){
+        if (IsLocalPlayer)
+        {
             // center camera on player
             Vector3 pos = transform.position;
             pos.z = -50;
@@ -53,7 +69,8 @@ public class PlayerControlMul : NetworkBehaviour{
         }
     }
 
-    void UpdateServer(){
+    void UpdateServer()
+    {
         //movement
         //Time.deltaTime - the interval in seconds from the last frame to the current one
         Vector3 movement = new Vector3(m_InputX, m_InputY, 0);
@@ -61,17 +78,21 @@ public class PlayerControlMul : NetworkBehaviour{
         movement *= speed;
         movement *= Time.deltaTime;
         float rotation = m_Rigidbody2D.rotation;
-        movement=Quaternion.Euler(0, 0, -rotation)*movement;
+        movement = Quaternion.Euler(0, 0, -rotation) * movement;
         //movement is rotated by the opposite of player orientation to realign with absolute directions 
         m_Rigidbody2D.transform.Translate(movement);
 
         //rotation
         float angle = Vector2.SignedAngle(Vector2.up, m_Direction);
-        m_Rigidbody2D.transform.eulerAngles = new Vector3 (0, 0, angle);
+        m_Rigidbody2D.transform.eulerAngles = new Vector3(0, 0, angle);
     }
 
-    void UpdateClient(){
-        if (!IsLocalPlayer){ return;}
+    void UpdateClient()
+    {
+        if (!IsLocalPlayer)
+        {
+            return;
+        }
 
         //movement
         float inputX = Input.GetAxis("Horizontal");
@@ -82,7 +103,8 @@ public class PlayerControlMul : NetworkBehaviour{
         Vector2 direction = mousePosition - m_Rigidbody2D.transform.position;
 
         //if sth changed
-        if (m_OldDirection != direction || m_OldInputX!=inputX || m_OldInputY!=inputY) {
+        if (m_OldDirection != direction || m_OldInputX != inputX || m_OldInputY != inputY)
+        {
             UpdateServerRpc(direction, inputX, inputY);
             m_OldDirection = direction;
             m_OldInputX = inputX;
@@ -90,11 +112,11 @@ public class PlayerControlMul : NetworkBehaviour{
         }
 
         // fire
-        if (Input.GetMouseButton(0) && Time.time > nextFire) {
+        if (Input.GetMouseButton(0) && Time.time > nextFire)
+        {
             nextFire = Time.time + fireRate;
             FireServerRpc();
         }
-        
     }
 
 
@@ -116,7 +138,7 @@ public class PlayerControlMul : NetworkBehaviour{
         Debug.Log(transform.rotation);
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
         rb.AddForce(transform.up * bulletForce, ForceMode2D.Impulse);
-        Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(),  GetComponent<Collider2D>());
+        Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(), GetComponent<Collider2D>());
 
         bullet.GetComponent<NetworkObject>().Spawn(true);
     }
@@ -131,8 +153,8 @@ public class PlayerControlMul : NetworkBehaviour{
         GUI.color = Color.white;
 
         GUI.Label(new Rect(pos.x - 21, Screen.height - pos.y - 31, 400, 30), PlayerName.Value.Value);
-
     }
+
     [ServerRpc]
     public void SetNameServerRpc(string name)
     {
