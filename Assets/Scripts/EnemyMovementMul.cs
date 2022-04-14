@@ -6,6 +6,14 @@ using Random = System.Random;
 
 public class EnemyMovementMul : NetworkBehaviour
 {
+    static string s_ObjectPoolTag = "ObjectPool";
+    NetworkObjectPool m_ObjectPool;
+    public GameObject BulletPrefab;
+    private GameObject player;
+
+    public float bulletForce = 5;
+    public float fireRate = 3;
+
     public NetworkVariable<int> health = new NetworkVariable<int>();
     private Random random;
     private float scale = 10f;
@@ -14,13 +22,25 @@ public class EnemyMovementMul : NetworkBehaviour
 	void Awake()
 	{
 		random = new Random();
+        m_ObjectPool = GameObject.FindWithTag(s_ObjectPoolTag).GetComponent<NetworkObjectPool>();
 	}
 
     void Start()
     {
-        if (!NetworkManager.Singleton.IsServer){return; }
-        SetHpServerRpc();
+        if (NetworkManager.Singleton.IsServer){
+            SetHpServerRpc();
+        }
+
 		InvokeRepeating("ChangeMovement", 0, 3);
+
+        player = GameObject.FindGameObjectWithTag("Player");
+        InvokeRepeating("Fire", fireRate, fireRate);
+    }
+
+    void Update(){
+        Vector2 direction = player.transform.position - transform.position;
+        float angle = Vector2.SignedAngle(Vector2.up, direction);
+        transform.eulerAngles = new Vector3 (0, 0, angle);
     }
     
     private void DestroyEnemy()
@@ -50,6 +70,24 @@ public class EnemyMovementMul : NetworkBehaviour
         }
     }
 
+    void Fire()
+    {
+		if (!NetworkObject.IsSpawned || !NetworkManager.Singleton.IsServer){ return;}
+        FireServerRpc();
+    }
+
+    [ServerRpc]
+    void FireServerRpc()
+    {
+        GameObject bullet = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
+        bullet.transform.position = transform.position;
+        bullet.transform.rotation = transform.rotation;
+        Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
+        rb.AddForce(transform.up * bulletForce, ForceMode2D.Impulse);
+        Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(),  GetComponent<Collider2D>());
+        bullet.GetComponent<NetworkObject>().Spawn(true);
+    }
+
     [ServerRpc]
     void DecreaseHpServerRpc()
     {
@@ -64,7 +102,7 @@ public class EnemyMovementMul : NetworkBehaviour
 	
 	void ChangeMovement()
 	{
-		if (!NetworkObject.IsSpawned){ return;}
+		if (!NetworkObject.IsSpawned || !NetworkManager.Singleton.IsServer){ return;}
 		ChangeMovementServerRpc();
 	}
 
