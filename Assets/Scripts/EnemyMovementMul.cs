@@ -84,9 +84,6 @@ public class EnemyMovementMul : NetworkBehaviour
                 DestroyEnemy();
             }
 
-        }else if (other.gameObject.CompareTag("Barier"))
-        {
-            DestroyEnemy();
         }
     }
 
@@ -133,6 +130,8 @@ public class EnemyMovementMul : NetworkBehaviour
 		Vector3 v = new Vector3(random.Next((int) -range, (int) range) / range * scale,
         random.Next((int) -range, (int) range) / range * scale, 0);
     	v.Normalize();
-    	rb.AddForce(v * 1, ForceMode2D.Impulse);
+
+        rb.velocity = transform.TransformDirection(v);
+    	//rb.AddForce(v * 1, ForceMode2D.Impulse);
 	}
 }
