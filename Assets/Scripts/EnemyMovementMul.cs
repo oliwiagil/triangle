@@ -18,6 +18,7 @@ public class EnemyMovementMul : NetworkBehaviour
 
     void Start()
     {
+        if (!NetworkManager.Singleton.IsServer){return; }
         SetHpServerRpc();
 		InvokeRepeating("ChangeMovement", 0, 3);
     }

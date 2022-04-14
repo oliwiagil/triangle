@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemySpawner : MonoBehaviour{
+public class EnemySpawner2 : MonoBehaviour{
     public Transform[] spawnPoints;
     public GameObject enemy;
     public float spawnDelay; 
