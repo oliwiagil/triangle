@@ -23,7 +23,7 @@ public class EnemyMovementMul : NetworkBehaviour
 	{
 		random = new Random();
         m_ObjectPool = GameObject.FindWithTag(s_ObjectPoolTag).GetComponent<NetworkObjectPool>();
-	}
+    }
 
     void Start()
     {
@@ -32,12 +32,32 @@ public class EnemyMovementMul : NetworkBehaviour
         }
 
 		InvokeRepeating("ChangeMovement", 0, 3);
-
-        player = GameObject.FindGameObjectWithTag("Player");
         InvokeRepeating("Fire", fireRate, fireRate);
     }
 
+    public GameObject GetClosestPlayer()
+    {
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        GameObject closest = null;
+        float minDistance = Mathf.Infinity;
+        Vector3 position = transform.position;
+
+        foreach (GameObject target in players)
+        {
+            Vector3 diff = target.transform.position - position;
+            //vector.sqrMagnitude - returns the squared length of vector
+            float distance = diff.sqrMagnitude;
+            if (distance < minDistance)
+            {
+                closest = target;
+                minDistance = distance;
+            }
+        }
+        return closest;
+    }
+
     void Update(){
+        player = GetClosestPlayer();
         Vector2 direction = player.transform.position - transform.position;
         float angle = Vector2.SignedAngle(Vector2.up, direction);
         transform.eulerAngles = new Vector3 (0, 0, angle);
@@ -55,7 +75,7 @@ public class EnemyMovementMul : NetworkBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!NetworkManager.Singleton.IsServer || !NetworkObject.IsSpawned){return; }
-        
+
         if (other.gameObject.CompareTag("Bullet"))
         {
             DecreaseHpServerRpc();
