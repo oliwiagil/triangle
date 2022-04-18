@@ -41,7 +41,10 @@ public class PlayerControlMul : NetworkBehaviour
     void Start()
     {
         DontDestroyOnLoad(gameObject);
-        SetNameServerRpc($"Player{OwnerClientId}");
+        if (IsLocalPlayer)
+        {
+            SetNameServerRpc($"Player{OwnerClientId}");
+        }
     }
 
     void Update()
@@ -135,7 +138,7 @@ public class PlayerControlMul : NetworkBehaviour
         GameObject bullet = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
         bullet.transform.position = transform.position;
         bullet.transform.rotation = transform.rotation;
-        Debug.Log(transform.rotation);
+    //    Debug.Log(transform.rotation);
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
         rb.AddForce(transform.up * bulletForce, ForceMode2D.Impulse);
         Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(), GetComponent<Collider2D>());

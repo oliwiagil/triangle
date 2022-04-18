@@ -10,7 +10,7 @@ public class Enemy : MonoBehaviour
     public float fireRate;
     public int health;
 
-    private float nextFire = 0;
+   // private float nextFire = 0;
 
 
     void Start(){
