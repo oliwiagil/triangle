@@ -6,39 +6,53 @@ using UnityEngine;
 using Random = System.Random;
 
 public class ObstacleSpawner : NetworkBehaviour{
-    public int seed;
+    public int initialSeed;
+    private int seed=-1;
     public GameObject ObstaclePrefab;
     public int size;
     private int offset;
     private double time = -1;
+    private bool connected = false;
     public int waitTime;
-    private Random random;
+    private Random random=null;
+    private Random initRandom;
 
     private List<GameObject> obstacles=new List<GameObject>();
-
+    
     void Awake()
     {   
         offset=-(size-1)/2;
-        random=new Random(seed);
+        initRandom=new Random(initialSeed);
+    }
+
+    [ClientRpc]
+    public void onSeedChangeClientRPC(int newSeed)
+    {
+        seed = newSeed;
+        random = new Random(seed);
+        destroyObstacles();
         addObstacles();
     }
 
     private void Update()
     {
-        if(!NetworkManager.Singleton.IsServer){return;}
-
-        if (time == -1)
+        if (NetworkManager.Singleton.IsServer)
         {
-            time = NetworkManager.Singleton.ServerTime.Time;
-        }
-        else
-        {
-            if (time + waitTime < NetworkManager.Singleton.ServerTime.Time)
+            if (time == -1)
             {
-                destroyObstacles();
                 time = NetworkManager.Singleton.ServerTime.Time;
-                addObstacles();
+                seed=Math.Abs(initRandom.Next());
             }
+            else
+            {
+                if (time + waitTime < NetworkManager.Singleton.ServerTime.Time)
+                {
+                    time = NetworkManager.Singleton.ServerTime.Time;
+                    seed=Math.Abs(initRandom.Next());
+                    onSeedChangeClientRPC(seed);
+                }
+            }
+            
         }
     }
 
