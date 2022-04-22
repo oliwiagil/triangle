@@ -6,14 +6,11 @@ using UnityEngine;
 using Random = System.Random;
 
 public class ObstacleSpawner : NetworkBehaviour{
-    public int initialSeed;
+    public int initialServerSeed;
     private int seed=-1;
     public GameObject ObstaclePrefab;
     public int size;
     private int offset;
-    private double time = -1;
-    private bool connected = false;
-    public int waitTime;
     private Random random=null;
     private Random initRandom;
 
@@ -22,37 +19,70 @@ public class ObstacleSpawner : NetworkBehaviour{
     void Awake()
     {   
         offset=-(size-1)/2;
-        initRandom=new Random(initialSeed);
+        initRandom = new Random(initialServerSeed);
+        Debug.Log("joined"+NetworkManager.Singleton.IsClient+" "+NetworkManager.Singleton.IsServer);
     }
 
-    [ClientRpc]
-    public void onSeedChangeClientRPC(int newSeed)
+    public void onSeedChange(int newSeed)
     {
+        if (newSeed == seed) {return; }
         seed = newSeed;
         random = new Random(seed);
         destroyObstacles();
         addObstacles();
     }
 
+    [ClientRpc]
+    void recieveSeedClientRPC(int newSeed)
+    {
+        onSeedChange(newSeed);
+    }
+    [ServerRpc(RequireOwnership = false)]
+    public void requestSendSeedServerRPC()
+    {
+        recieveSeedClientRPC(seed);
+    }
+    [ServerRpc(RequireOwnership = false)]
+    public void requestSendNewSeedServerRPC()
+    {
+            int newSeed = Math.Abs(initRandom.Next());
+            onSeedChange(newSeed);
+            recieveSeedClientRPC(newSeed);
+            //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
+            //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
+            //and potentially overwrites new seed with the old one
+    }
+
+    void refreshObstacles(string keyBind)
+    {
+            if (Input.GetKey(keyBind))
+            {
+                Debug.Log("requsted changing seed"+seed);
+                requestSendNewSeedServerRPC();
+                Debug.Log("recieved new seed"+seed);
+            }
+    }
+
     private void Update()
     {
         if (NetworkManager.Singleton.IsServer)
         {
-            if (time == -1)
+            if (seed == -1)
             {
-                time = NetworkManager.Singleton.ServerTime.Time;
-                seed=Math.Abs(initRandom.Next());
+                requestSendNewSeedServerRPC();
             }
-            else
+            refreshObstacles("n");
+        }
+        if (NetworkManager.Singleton.IsConnectedClient)
+        {
+            if (seed == -1 && !NetworkManager.Singleton.IsServer)
             {
-                if (time + waitTime < NetworkManager.Singleton.ServerTime.Time)
-                {
-                    time = NetworkManager.Singleton.ServerTime.Time;
-                    seed=Math.Abs(initRandom.Next());
-                    onSeedChangeClientRPC(seed);
-                }
+                Debug.Log("requsted seed"+seed);
+                requestSendSeedServerRPC();
+                Debug.Log("recieved current seed"+seed);
             }
-            
+
+            refreshObstacles("n");
         }
     }
 

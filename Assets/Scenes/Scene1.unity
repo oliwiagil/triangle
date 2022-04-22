@@ -1002,10 +1002,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20702d9d11985a932acd05cbb09af569, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  initialSeed: 2137
+  initialServerSeed: 2137
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 5137a47033e8b83828458ad2055b5e95, type: 3}
   size: 13
-  waitTime: 1
 --- !u!4 &2027122272
 Transform:
   m_ObjectHideFlags: 0
