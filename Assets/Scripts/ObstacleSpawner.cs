@@ -20,7 +20,6 @@ public class ObstacleSpawner : NetworkBehaviour{
     {   
         offset=-(size-1)/2;
         initRandom = new Random(initialServerSeed);
-        Debug.Log("joined"+NetworkManager.Singleton.IsClient+" "+NetworkManager.Singleton.IsServer);
     }
 
     public void onSeedChange(int newSeed)
@@ -57,9 +56,7 @@ public class ObstacleSpawner : NetworkBehaviour{
     {
             if (Input.GetKey(keyBind))
             {
-                Debug.Log("requsted changing seed"+seed);
                 requestSendNewSeedServerRPC();
-                Debug.Log("recieved new seed"+seed);
             }
     }
 
@@ -77,9 +74,7 @@ public class ObstacleSpawner : NetworkBehaviour{
         {
             if (seed == -1 && !NetworkManager.Singleton.IsServer)
             {
-                Debug.Log("requsted seed"+seed);
                 requestSendSeedServerRPC();
-                Debug.Log("recieved current seed"+seed);
             }
 
             refreshObstacles("n");
@@ -115,3 +110,41 @@ public class ObstacleSpawner : NetworkBehaviour{
 
     }
 }
+/*
+ n*m (nieparzyste)
+-------------------------
+|   ||   ||   ||   ||   |
+-------------------------
+|   ||   ||   ||   ||   |
+-------------------------
+|   ||   |Start|   ||   |
+-------------------------
+|   ||   ||   ||   ||   |
+-------------------------
+|   ||   ||   ||   ||   |
+-------------------------
+<-- TODO
+- randomly generated rooms (mergeable) (from random with some automata/algorithm) 
+- k collectibles (up to 1 per room) for k players to be returned to starting room
+- each player collects ONE
+- scaling difficulty
+<-- TODO
+- minimap
+<-- TODO
+- hud with player name + healtbar + some stats?<-- integrate with player name (and class or some) (corner of the screen)
+- enemy "patrols" room until player enters room, than does something
+<-- TODO
+- healthbars for everyone  (under objects)
+
+-----------------------
+|     ...|            |
+|---------            |
+|                     |
+|                     |
+|                     |
+|            |--------|
+|            | minimap|
+|            |        |
+|            |        |
+-----------------------
+*/
