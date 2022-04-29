@@ -74,6 +74,8 @@ public class PlayerControlMul : NetworkBehaviour
 
     void UpdateServer()
     {
+        m_Rigidbody2D.velocity=new Vector2(0, 0);
+
         //movement
         //Time.deltaTime - the interval in seconds from the last frame to the current one
         Vector3 movement = new Vector3(m_InputX, m_InputY, 0);
