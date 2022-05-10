@@ -101,40 +101,67 @@ public class ObstacleSpawner : NetworkBehaviour{
         float innerWallLength = (roomSize - doorSize) / 2f + 1f;
         float innerWallOffset = (roomSize - innerWallLength) / 2f + 1f;
         //Left inner wall
-        GameObject innerWallLU = Instantiate(ObstaclePrefab, new Vector3(-innerWallDist, innerWallOffset, 0f), Quaternion.identity);
-        innerWallLU.gameObject.transform.localScale = new Vector3(1, innerWallLength, 1);
-        GameObject innerWallLB = Instantiate(ObstaclePrefab, new Vector3(-innerWallDist, -innerWallOffset, 0f), Quaternion.identity);
-        innerWallLB.gameObject.transform.localScale = new Vector3(1, innerWallLength, 1);
+        GameObject innerWallLU = Instantiate(ObstaclePrefab, new Vector3(-innerWallDist, innerWallOffset), Quaternion.identity);
+        innerWallLU.gameObject.transform.localScale = new Vector3(1, innerWallLength);
+        GameObject innerWallLB = Instantiate(ObstaclePrefab, new Vector3(-innerWallDist, -innerWallOffset), Quaternion.identity);
+        innerWallLB.gameObject.transform.localScale = new Vector3(1, innerWallLength);
         //Right inner wall
-        GameObject innerWallRU = Instantiate(ObstaclePrefab, new Vector3(innerWallDist, innerWallOffset, 0f), Quaternion.identity);
-        innerWallRU.gameObject.transform.localScale = new Vector3(1, innerWallLength, 1);
-        GameObject innerWallRB = Instantiate(ObstaclePrefab, new Vector3(innerWallDist, -innerWallOffset, 0f), Quaternion.identity);
-        innerWallRB.gameObject.transform.localScale = new Vector3(1, innerWallLength, 1);
+        GameObject innerWallRU = Instantiate(ObstaclePrefab, new Vector3(innerWallDist, innerWallOffset), Quaternion.identity);
+        innerWallRU.gameObject.transform.localScale = new Vector3(1, innerWallLength);
+        GameObject innerWallRB = Instantiate(ObstaclePrefab, new Vector3(innerWallDist, -innerWallOffset), Quaternion.identity);
+        innerWallRB.gameObject.transform.localScale = new Vector3(1, innerWallLength);
         //Upper inner wall
-        GameObject innerWallUR = Instantiate(ObstaclePrefab, new Vector3(innerWallOffset, innerWallDist, 0f), Quaternion.identity);
-        innerWallUR.gameObject.transform.localScale = new Vector3(innerWallLength, 1,1);
-        GameObject innerWallUL = Instantiate(ObstaclePrefab, new Vector3(-innerWallOffset, innerWallDist, 0f), Quaternion.identity);
-        innerWallUL.gameObject.transform.localScale = new Vector3( innerWallLength, 1,1);
+        GameObject innerWallUR = Instantiate(ObstaclePrefab, new Vector3(innerWallOffset, innerWallDist), Quaternion.identity);
+        innerWallUR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
+        GameObject innerWallUL = Instantiate(ObstaclePrefab, new Vector3(-innerWallOffset, innerWallDist), Quaternion.identity);
+        innerWallUL.gameObject.transform.localScale = new Vector3( innerWallLength, 1);
         //Bottom inner wall
-        GameObject innerWallBR = Instantiate(ObstaclePrefab, new Vector3(innerWallOffset, -innerWallDist, 0f), Quaternion.identity);
-        innerWallBR.gameObject.transform.localScale = new Vector3(innerWallLength, 1,1);
-        GameObject innerWallBL = Instantiate(ObstaclePrefab, new Vector3(-innerWallOffset, -innerWallDist, 0f), Quaternion.identity);
-        innerWallBL.gameObject.transform.localScale = new Vector3( innerWallLength, 1,1);
+        GameObject innerWallBR = Instantiate(ObstaclePrefab, new Vector3(innerWallOffset, -innerWallDist), Quaternion.identity);
+        innerWallBR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
+        GameObject innerWallBL = Instantiate(ObstaclePrefab, new Vector3(-innerWallOffset, -innerWallDist), Quaternion.identity);
+        innerWallBL.gameObject.transform.localScale = new Vector3( innerWallLength, 1);
 
         float outerWallDist = (roomSize + 1f) * roomsInRow / 2f;
         float outerWallLength = (roomSize + 1) * roomsInRow * 1f+1f;
         //Left outer wall
-        GameObject outerWallL = Instantiate(ObstaclePrefab, new Vector3(-outerWallDist, 0f, 0f), Quaternion.identity);
-        outerWallL.gameObject.transform.localScale = new Vector3(1, outerWallLength, 1);
+        GameObject outerWallL = Instantiate(ObstaclePrefab, new Vector3(-outerWallDist, 0f), Quaternion.identity);
+        outerWallL.gameObject.transform.localScale = new Vector3(1, outerWallLength);
         //Right outer wall
-        GameObject outerWallR = Instantiate(ObstaclePrefab, new Vector3(outerWallDist, 0f, 0f), Quaternion.identity);
-        outerWallR.gameObject.transform.localScale = new Vector3(1, outerWallLength, 1);
+        GameObject outerWallR = Instantiate(ObstaclePrefab, new Vector3(outerWallDist, 0f), Quaternion.identity);
+        outerWallR.gameObject.transform.localScale = new Vector3(1, outerWallLength);
         //Upper outer wall
-        GameObject outerWallU = Instantiate(ObstaclePrefab, new Vector3(0f,outerWallDist,  0f), Quaternion.identity);
-        outerWallU.gameObject.transform.localScale = new Vector3( outerWallLength,1, 1);
+        GameObject outerWallU = Instantiate(ObstaclePrefab, new Vector3(0f,outerWallDist), Quaternion.identity);
+        outerWallU.gameObject.transform.localScale = new Vector3( outerWallLength,1);
         //Bottom outer wall
-        GameObject outerWallB = Instantiate(ObstaclePrefab, new Vector3(0f,-outerWallDist,  0f), Quaternion.identity);
-        outerWallB.gameObject.transform.localScale = new Vector3( outerWallLength,1, 1);
+        GameObject outerWallB = Instantiate(ObstaclePrefab, new Vector3(0f,-outerWallDist), Quaternion.identity);
+        outerWallB.gameObject.transform.localScale = new Vector3( outerWallLength,1);
+        float shift = (roomSize + 1);
+        for (int i = -(roomsInRow - 1) / 2; i <= (roomsInRow - 1) / 2; ++i)
+        {
+            for (int j = -(roomsInRow - 1) / 2; j <= (roomsInRow - 1) / 2; ++j)//generates upper and right wall for room (i,j)
+            {
+                //horizontal walls
+                if (!(i == 0 && (j == 0 || j == -1)) && j != (roomsInRow-1)/2)//would overlap with inner walls or outer upper
+                {
+                    GameObject wallHL = Instantiate(ObstaclePrefab,
+                        new Vector3(innerWallOffset + (i * shift), (innerWallDist + shift * j)), Quaternion.identity);
+                    wallHL.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
+                    GameObject wallHR = Instantiate(ObstaclePrefab,
+                        new Vector3(-innerWallOffset + (i * shift), (innerWallDist + shift * j)), Quaternion.identity);
+                    wallHR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
+                }
+                //vertical walls
+                if (!(j == 0 && (i == 0 || i == -1)) && i != (roomsInRow-1)/2)//would overlap with inner walls or outer right
+                {
+                    GameObject wallVU = Instantiate(ObstaclePrefab,
+                        new Vector3( (innerWallDist + shift * i),innerWallOffset + (j * shift)), Quaternion.identity);
+                    wallVU.gameObject.transform.localScale = new Vector3( 1,innerWallLength);
+                    GameObject wallVB = Instantiate(ObstaclePrefab,
+                        new Vector3((innerWallDist + shift * i),-innerWallOffset + (j * shift) ), Quaternion.identity);
+                    wallVB.gameObject.transform.localScale = new Vector3( 1,innerWallLength);
+                }
+            }
+        }
     }
 
     void destroyObstacles()

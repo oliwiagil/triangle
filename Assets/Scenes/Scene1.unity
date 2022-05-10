@@ -720,9 +720,9 @@ MonoBehaviour:
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 01a846fbc154c04afbc044f36ae002da, type: 3}
   size: 2
-  roomSize: 25
-  doorSize: 5
-  roomsInRow: 3
+  roomSize: 6
+  doorSize: 2
+  roomsInRow: 7
 --- !u!4 &2027122272
 Transform:
   m_ObjectHideFlags: 0
