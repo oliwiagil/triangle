@@ -16,6 +16,7 @@ public class ObstacleSpawner : NetworkBehaviour{
     public int roomsInRow;
     private Random random=null;
     private Random initRandom;
+    private int[,] roomLayout;
 
     private List<GameObject> obstacles=new List<GameObject>();
 
@@ -60,7 +61,6 @@ public class ObstacleSpawner : NetworkBehaviour{
             if (Input.GetKey(keyBind))
             {
                 requestSendNewSeedServerRPC();
-                
             }
     }
 
@@ -135,30 +135,53 @@ public class ObstacleSpawner : NetworkBehaviour{
         //Bottom outer wall
         GameObject outerWallB = Instantiate(ObstaclePrefab, new Vector3(0f,-outerWallDist), Quaternion.identity);
         outerWallB.gameObject.transform.localScale = new Vector3( outerWallLength,1);
+        
+
+        roomLayout =new int[roomsInRow,roomsInRow];
+        buildRoomsWalls();
+    }
+
+    private void buildRoomsWalls()
+    {
         float shift = (roomSize + 1);
+        float innerWallDist = (roomSize + 1f) / 2f;
+        float innerWallLength = (roomSize - doorSize) / 2f + 1f;
+        float innerWallOffset = (roomSize - innerWallLength) / 2f + 1f;
+
         for (int i = -(roomsInRow - 1) / 2; i <= (roomsInRow - 1) / 2; ++i)
         {
-            for (int j = -(roomsInRow - 1) / 2; j <= (roomsInRow - 1) / 2; ++j)//generates upper and right wall for room (i,j)
+            //generates bottom and left wall for room (i,j)
+            for (int j = -(roomsInRow - 1) / 2; j <= (roomsInRow - 1) / 2; ++j) 
             {
+                /*TODO
+                 here you can omit generating left/bottom wall,
+                 and cover it (and margins on both sides) with obstacle for cellular automata
+                 
+                 populating room with obstacle will be done elsewhere
+                */
+
                 //horizontal walls
-                if (!(i == 0 && (j == 0 || j == -1)) && j != (roomsInRow-1)/2)//would overlap with inner walls or outer upper
+                if (!(i == 0 && (j == 0 || j == 1)) &&
+                    j != -(roomsInRow - 1) / 2) //would overlap with inner walls or outer bottom
                 {
                     GameObject wallHL = Instantiate(ObstaclePrefab,
-                        new Vector3(innerWallOffset + (i * shift), (innerWallDist + shift * j)), Quaternion.identity);
+                        new Vector3(innerWallOffset + (i * shift), (-innerWallDist + shift * j)), Quaternion.identity);
                     wallHL.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
                     GameObject wallHR = Instantiate(ObstaclePrefab,
-                        new Vector3(-innerWallOffset + (i * shift), (innerWallDist + shift * j)), Quaternion.identity);
+                        new Vector3(-innerWallOffset + (i * shift), (-innerWallDist + shift * j)), Quaternion.identity);
                     wallHR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
                 }
+
                 //vertical walls
-                if (!(j == 0 && (i == 0 || i == -1)) && i != (roomsInRow-1)/2)//would overlap with inner walls or outer right
+                if (!(j == 0 && (i == 0 || i == 1)) &&
+                    i != -(roomsInRow - 1) / 2) //would overlap with inner walls or outer left
                 {
                     GameObject wallVU = Instantiate(ObstaclePrefab,
-                        new Vector3( (innerWallDist + shift * i),innerWallOffset + (j * shift)), Quaternion.identity);
-                    wallVU.gameObject.transform.localScale = new Vector3( 1,innerWallLength);
+                        new Vector3((-innerWallDist + shift * i), innerWallOffset + (j * shift)), Quaternion.identity);
+                    wallVU.gameObject.transform.localScale = new Vector3(1, innerWallLength);
                     GameObject wallVB = Instantiate(ObstaclePrefab,
-                        new Vector3((innerWallDist + shift * i),-innerWallOffset + (j * shift) ), Quaternion.identity);
-                    wallVB.gameObject.transform.localScale = new Vector3( 1,innerWallLength);
+                        new Vector3((-innerWallDist + shift * i), -innerWallOffset + (j * shift)), Quaternion.identity);
+                    wallVB.gameObject.transform.localScale = new Vector3(1, innerWallLength);
                 }
             }
         }
@@ -212,12 +235,10 @@ public class ObstacleSpawner : NetworkBehaviour{
 - each player collects ONE
 - scaling difficulty
 <-- TODO
-- minimap
-<-- TODO
-- hud with player name + healtbar + some stats?<-- integrate with player name (and class or some) (corner of the screen)
+- hud with player name + health bar + some stats?<-- integrate with player name (and class or some) (corner of the screen)
 - enemy "patrols" room until player enters room, than does something
 <-- TODO
-- healthbars for everyone  (under objects)
+- health bars for everyone  (under objects)
 
 -----------------------
 |     ...|            |
