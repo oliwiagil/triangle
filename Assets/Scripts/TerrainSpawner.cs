@@ -545,7 +545,13 @@ public class TerrainSpawner : NetworkBehaviour{
 |   ||   ||   ||   ||   |
 -------------------------
 <-- TODO
-- randomly generated rooms (mergeable) (from random with some automata/algorithm) 
+-- combine enemy spawner with terrainSpawner 
+    (enemies spawning in the room where the player is  and rooms around it 
+    (use within() and getRoomCoordinates (apply mapOffset when spawning)))
+    TODO
+-- combine player spawner with terrainSpawner, spawn them in main (middle) room and move them back to it when onSeedChange is called and terrain is regenerated
+
+    TODO: add objectives
 - k collectibles (up to 1 per room) for k players to be returned to starting room
 - each player collects ONE
 - scaling difficulty
