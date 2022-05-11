@@ -722,7 +722,8 @@ MonoBehaviour:
   roomSize: 8
   doorSize: 5
   roomsInRow: 5
-  obstacleProbability: 1
+  obstacleProbability: 0.3
+  wallProbability: 0.75
 --- !u!4 &2027122272
 Transform:
   m_ObjectHideFlags: 0

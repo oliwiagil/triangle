@@ -12,6 +12,7 @@ public class TerrainSpawner : NetworkBehaviour{
     public int doorSize=5;
     public int roomsInRow=5;
     public float obstacleProbability=0.5f;
+    public float wallProbability=0.8f;
     private Random random=null;
     private Random initRandom;
     private short[,] roomMap;
@@ -140,21 +141,21 @@ public class TerrainSpawner : NetworkBehaviour{
     //x and y are in [0,roomsInRow-1]
     //return is int[2,2] x and y of bottom-left and upper-right corner
     //including margin of width 1 around the wall
-    private int[,] getLeftWallCoordinates(int x, int y)
+    private int[,] getLeftWallCoordinates(int x, int y,int width=0)
     {
         if (x >= roomsInRow || x < 0 || y >= roomsInRow || y < 0)
         {
             throw new ArithmeticException("room x and y must be within [0,roomsInRow-1]");
         }
         int[,] coordinates = new int[2, 2];
-        coordinates[0, 0] = 1+ x * (roomSize + 1);
+        coordinates[0, 0] = 1+ x * (roomSize + 1)-width;
         coordinates[0, 1] = 1+ y * (roomSize + 1);
-        coordinates[1, 0] = 1+ x * (roomSize + 1);
+        coordinates[1, 0] = 1+ x * (roomSize + 1)+width;
         coordinates[1, 1] = 1+ y * (roomSize + 1)+roomSize;
         return coordinates;
     }
     
-    private int[,] getBottomWallCoordinates(int x, int y)
+    private int[,] getBottomWallCoordinates(int x, int y,int width=0)
     {
         if (x >= roomsInRow || x < 0 || y >= roomsInRow || y < 0)
         {
@@ -162,9 +163,9 @@ public class TerrainSpawner : NetworkBehaviour{
         }
         int[,] coordinates = new int[2, 2];
         coordinates[0, 0] = 1+ x * (roomSize + 1);
-        coordinates[0, 1] = 1+ y * (roomSize + 1);
+        coordinates[0, 1] = 1+ y * (roomSize + 1)-width;
         coordinates[1, 0] = 1+ x * (roomSize + 1)+roomSize;
-        coordinates[1, 1] = 1+ y * (roomSize + 1);
+        coordinates[1, 1] = 1+ y * (roomSize + 1)+width;
         return coordinates;
     }
 
@@ -217,7 +218,9 @@ public class TerrainSpawner : NetworkBehaviour{
         mapOffset = -(roomSize / 2 + (roomSize + 1) * (roomsInRow - 1) / 2 + 2);
         mapSize = roomSize * roomsInRow +  (roomsInRow + 1) + 2;
         roomMap = new short[mapSize,mapSize];
-        setArea(new int[,]{{0, 0}, {mapSize, mapSize}},inactive);
+        setArea(new int[,]{{0, 0}, {mapSize, mapSize}},wall);
+        setArea(addMargin(new int[,]{{0, 0}, {mapSize, mapSize}},-3),inactive);
+        //creates outer wall ring and sets inside as inactive
         float innerWallDist = (roomSize + 1f) / 2f;
         float innerWallLength = (roomSize - doorSize) / 2f + 1f;
         float innerWallOffset = (roomSize - innerWallLength) / 2f + 1f;
@@ -266,7 +269,7 @@ public class TerrainSpawner : NetworkBehaviour{
         float innerWallDist = (roomSize + 1f) / 2f;
         float innerWallLength = (roomSize - doorSize) / 2f + 1f;
         float innerWallOffset = (roomSize - innerWallLength) / 2f + 1f;
-
+        int roomOffset = (roomsInRow - 1) / 2;
         for (int i = -(roomsInRow - 1) / 2; i <= (roomsInRow - 1) / 2; ++i)
         {
             //generates bottom and left wall for room (i,j)
@@ -280,31 +283,53 @@ public class TerrainSpawner : NetworkBehaviour{
                 */
 
                 //horizontal walls
-                if (!(i == 0 && (j == 0 || j == 1)) &&
-                    j != -(roomsInRow - 1) / 2) //would overlap with inner walls or outer bottom
+                if (!(i == 0 && (j == 0 || j == 1)) && j != -(roomsInRow - 1) / 2)
+                    //would overlap with inner walls or outer bottom
                 {
-                    GameObject wallHL = Instantiate(ObstaclePrefab,
-                        new Vector3(innerWallOffset + (i * shift), (-innerWallDist + shift * j)), Quaternion.identity);
-                    wallHL.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
-                    GameObject wallHR = Instantiate(ObstaclePrefab,
-                        new Vector3(-innerWallOffset + (i * shift), (-innerWallDist + shift * j)), Quaternion.identity);
-                    wallHR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
-                    obstacles.Add(wallHL);
-                    obstacles.Add(wallHR);
+                    if (random.NextDouble() <= wallProbability)
+                    {
+                        GameObject wallHL = Instantiate(ObstaclePrefab,
+                            new Vector3(innerWallOffset + (i * shift), (-innerWallDist + shift * j)),
+                            Quaternion.identity);
+                        wallHL.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
+                        GameObject wallHR = Instantiate(ObstaclePrefab,
+                            new Vector3(-innerWallOffset + (i * shift), (-innerWallDist + shift * j)),
+                            Quaternion.identity);
+                        wallHR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
+                        obstacles.Add(wallHL);
+                        obstacles.Add(wallHR);
+                        setArea(addMargin(getBottomWallCoordinates(i+roomOffset, j+roomOffset), 1), wall);
+                    }//no need to set are inactive if wall is not created, because this is the default
+                    else
+                    {
+                        populateArea(addMargin(getBottomWallCoordinates(i+roomOffset, j+roomOffset,3),-2));
+                        //need to remove margin(2) (margin(1)+wall natural width), but still populate margin(1) in non-overlapping part
+                        //hence this abomination
+                    }
                 }
 
                 //vertical walls
                 if (!(j == 0 && (i == 0 || i == 1)) &&
                     i != -(roomsInRow - 1) / 2) //would overlap with inner walls or outer left
                 {
-                    GameObject wallVU = Instantiate(ObstaclePrefab,
-                        new Vector3((-innerWallDist + shift * i), innerWallOffset + (j * shift)), Quaternion.identity);
-                    wallVU.gameObject.transform.localScale = new Vector3(1, innerWallLength);
-                    GameObject wallVB = Instantiate(ObstaclePrefab,
-                        new Vector3((-innerWallDist + shift * i), -innerWallOffset + (j * shift)), Quaternion.identity);
-                    wallVB.gameObject.transform.localScale = new Vector3(1, innerWallLength);
-                    obstacles.Add(wallVU);
-                    obstacles.Add(wallVB);
+                    if (random.NextDouble() <= wallProbability)
+                    {
+                        GameObject wallVU = Instantiate(ObstaclePrefab,
+                            new Vector3((-innerWallDist + shift * i), innerWallOffset + (j * shift)),
+                            Quaternion.identity);
+                        wallVU.gameObject.transform.localScale = new Vector3(1, innerWallLength);
+                        GameObject wallVB = Instantiate(ObstaclePrefab,
+                            new Vector3((-innerWallDist + shift * i), -innerWallOffset + (j * shift)),
+                            Quaternion.identity);
+                        wallVB.gameObject.transform.localScale = new Vector3(1, innerWallLength);
+                        obstacles.Add(wallVU);
+                        obstacles.Add(wallVB);
+                        setArea(addMargin(getLeftWallCoordinates(i + roomOffset, j + roomOffset), 1), wall);
+                    }
+                    else
+                    {
+                        populateArea(addMargin(getLeftWallCoordinates(i+roomOffset, j+roomOffset,3),-2));
+                    }
                 }
             }
         }
@@ -319,7 +344,8 @@ public class TerrainSpawner : NetworkBehaviour{
         }
        
         obstacles = new List<GameObject>();
-        setArea(new int[,]{{0,0},{mapSize,mapSize}},inactive);    
+        setArea(addMargin(new int[,]{{0,0},{mapSize,mapSize}},-3),inactive);
+        //margin to not disable outer walls 
     }
 
     void addObstacles()
@@ -333,6 +359,9 @@ public class TerrainSpawner : NetworkBehaviour{
                 }
             }
         }
+        setArea(addMargin(new int[,]{{2+(roomSize+1)*(roomsInRow-1)/2,2+(roomSize+1)*(roomsInRow-1)/2},
+            {2+(roomSize+1)*(roomsInRow-1)/2+roomSize,2+(roomSize+1)*(roomsInRow-1)/2+roomSize}},2),wall);
+        //set spawn area (with margin) as a wall  
     }
 }
 /*
