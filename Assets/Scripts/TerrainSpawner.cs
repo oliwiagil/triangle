@@ -20,13 +20,13 @@ public class TerrainSpawner : NetworkBehaviour{
     //max is roomSize*roomsInRow+1*(roomsInRow+1)+2 = (rooms + walls + outer margin)
     private int mapSize;
     private int mapOffset;
+
     //for translation from map coordinates to real coordinates
     //cell state
     private const short inactive = 0;
     private const short active = 1;
     private const short emerging = 2;
-    private const short fadeing = 3;
-    private const short wall = 4;
+    private const short wall = 3;
 
     private List<GameObject> obstacles=new List<GameObject>();
 
@@ -172,13 +172,12 @@ public class TerrainSpawner : NetworkBehaviour{
     private void addObstacles(int x, int y)
     {
         //translate map to real coordinates and refer to center of the obstacle, not its bottom-left corner
-        float xf = x + mapOffset + 0.5f;
-        float yf = y + mapOffset + 0.5f;
+        float xf = x + mapOffset;
+        float yf = y + mapOffset;
         //Debug.Log(xf+" "+yf+" --- "+mapOffset+" --- "+x+" "+y);
         GameObject obstacle = Instantiate(ObstaclePrefab, new Vector3(xf, yf), Quaternion.identity);
         obstacle.gameObject.transform.localScale = new Vector3(1, 1);
         obstacles.Add(obstacle);
-        roomMap[x, y] = active;
     }
 
     private void populateArea(int[,] coordinates,int mode=0)
@@ -186,15 +185,33 @@ public class TerrainSpawner : NetworkBehaviour{
         for (int i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
             for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j)
             {
-                if (roomMap[i, j] == 0)
+                if (roomMap[i, j] == inactive)
                 {
                     if (random.NextDouble() <= obstacleProbability || mode != 0)
                     {
-                        addObstacles(i, j);
+                        roomMap[i, j] = active;
                     }
                 }
             }
         }
+    }
+    private void buildObstacles(int[,] coordinates)
+    {
+        double count = 0;
+        double all = 0;
+        for (int i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
+            for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j)
+            {
+                if (roomMap[i, j] == active)
+                {
+                    addObstacles(i,j);
+                    count += 1;
+                }
+
+                all += 1;
+            }
+        }
+        Debug.Log("Filled: "+(100*count/all)+"%");
     }
     private void setArea(int[,] coordinates,short v)
     { // add translation from map to real coordinates and create alternative "get coordinates"
@@ -219,6 +236,10 @@ public class TerrainSpawner : NetworkBehaviour{
         if (obstacleProbability > 1 || obstacleProbability<0)
         {
             throw new ArithmeticException("obstacleProbability needs to be within range [0:1]");
+        }
+        if (roomSize <3 || roomSize % 2 == 0)
+        {
+            throw new ArithmeticException("roomSize needs to be an odd integer greater than 2");
         }
         mapOffset = -(roomSize / 2 + (roomSize + 1) * (roomsInRow - 1) / 2 + 2);
         mapSize = roomSize * roomsInRow +  (roomsInRow + 1) + 2;
@@ -303,7 +324,7 @@ public class TerrainSpawner : NetworkBehaviour{
                         wallHR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
                         obstacles.Add(wallHL);
                         obstacles.Add(wallHR);
-                        setArea(addMargin(getBottomWallCoordinates(i+roomOffset, j+roomOffset), 0), wall);
+                        setArea(addMargin(getBottomWallCoordinates(i+roomOffset, j+roomOffset), 1), wall);
                     }//no need to set area inactive if wall is not created, that is the default
                 }
 
@@ -345,11 +366,97 @@ public class TerrainSpawner : NetworkBehaviour{
 
     void addObstacles()
     {
+        int[,] area = new int[,] {{3, 3}, {mapSize - 3, mapSize - 3}};
         buildRoomsWalls();
         setArea(addMargin(new int[,]{{2+(roomSize+1)*(roomsInRow-1)/2,2+(roomSize+1)*(roomsInRow-1)/2},
             {2+(roomSize+1)*(roomsInRow-1)/2+roomSize,2+(roomSize+1)*(roomsInRow-1)/2+roomSize}},2),wall);
         //set spawn area (with margin) as a wall  
-        populateArea(new int[,]{{3,3},{mapSize-3,mapSize-3}});
+        populateArea(area);
+
+        while(automataStep(area)){};
+        buildObstacles(area);
+    }
+
+    void printMap(int[,] coordinates)
+    {
+        string outVar = "";
+        for (int x = coordinates[0, 0]; x < coordinates[1, 0]; ++x) {
+            for (int y = coordinates[0, 1]; y < coordinates[1, 1]; ++y)
+            {
+                outVar += roomMap[x, y].ToString() + " ";
+            }
+
+            outVar += "\n";
+        }
+        Debug.Log(outVar);
+    }
+
+    bool automataStep(int[,] coordinates)
+    {
+        //do not ask how it works, because it objectively shouldn't
+        //but it is a heuristic so it doesn't care about my opinion
+        int[,] cross = new int[,] {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
+        short[,] tmp = roomMap.Clone() as short[,];
+        for (int x = coordinates[0, 0]; x < coordinates[1, 0]; ++x) {
+            for (int y = coordinates[0, 1]; y < coordinates[1, 1]; ++y)
+            {
+                if (tmp[x, y] == active || tmp[x, y] == inactive)
+                {
+                    int count = 0;
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        if (tmp[x + cross[i, 0], y + cross[i, 1]] == 1) count++;
+                    }
+
+                    if (tmp[x, y] == active && count < 2)
+                    {
+                        tmp[x, y] = inactive;
+                    }
+                    else if(tmp[x,y]==inactive && count>=2)
+                    {
+                        tmp[x, y] = emerging;
+                    }
+                }
+
+            }
+        }
+        for (int x = coordinates[0, 0]; x < coordinates[1, 0]; ++x) {
+            for (int y = coordinates[0, 1]; y < coordinates[1, 1]; ++y)
+            {
+                if (tmp[x, y] == emerging)
+                {
+                    int count = 0;
+                    for (int i = 0; i < 4; ++i)
+                    {
+                        if (tmp[x + cross[i, 0], y + cross[i, 1]] == 1) count++;
+                    }
+
+                    if (count > 2)
+                    {
+                        tmp[x, y] = active;
+                    }
+                    else
+                    {
+                        tmp[x, y] = inactive;
+                    }
+                }
+
+            }
+        }
+        bool outVar=false;
+        for (int x = coordinates[0, 0]; x < coordinates[1, 0] && !outVar; ++x)
+        {
+            for (int y = coordinates[0, 1]; y < coordinates[1, 1] && !outVar; ++y)
+            {
+                if (tmp[x, y] != roomMap[x, y])
+                {
+                    outVar = true;
+                }
+            }
+        }
+
+        roomMap = tmp.Clone() as short[,];
+        return outVar;
     }
 }
 /*
