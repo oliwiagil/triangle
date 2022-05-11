@@ -699,7 +699,7 @@ GameObject:
   - component: {fileID: 2027122271}
   - component: {fileID: 2027122273}
   m_Layer: 0
-  m_Name: ObstacleSpawner
+  m_Name: TerrainSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -719,10 +719,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 01a846fbc154c04afbc044f36ae002da, type: 3}
-  size: 2
-  roomSize: 6
-  doorSize: 2
-  roomsInRow: 7
+  roomSize: 25
+  doorSize: 5
+  roomsInRow: 5
+  obstacleProbability: 0.5
 --- !u!4 &2027122272
 Transform:
   m_ObjectHideFlags: 0
