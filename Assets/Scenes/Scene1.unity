@@ -722,7 +722,7 @@ MonoBehaviour:
   roomSize: 21
   doorSize: 3
   roomsInRow: 7
-  obstacleProbability: 0.56
+  obstacleProbability: 0.57
   wallProbability: 0.75
 --- !u!4 &2027122272
 Transform:
@@ -798,7 +798,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 14
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
