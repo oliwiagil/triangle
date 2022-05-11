@@ -720,10 +720,10 @@ MonoBehaviour:
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 01a846fbc154c04afbc044f36ae002da, type: 3}
   roomSize: 8
-  doorSize: 5
+  doorSize: 2
   roomsInRow: 5
-  obstacleProbability: 0.3
-  wallProbability: 0.75
+  obstacleProbability: 0.5
+  wallProbability: 0.8
 --- !u!4 &2027122272
 Transform:
   m_ObjectHideFlags: 0

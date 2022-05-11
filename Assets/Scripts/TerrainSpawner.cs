@@ -150,8 +150,8 @@ public class TerrainSpawner : NetworkBehaviour{
         int[,] coordinates = new int[2, 2];
         coordinates[0, 0] = 1+ x * (roomSize + 1)-width;
         coordinates[0, 1] = 1+ y * (roomSize + 1);
-        coordinates[1, 0] = 1+ x * (roomSize + 1)+width;
-        coordinates[1, 1] = 1+ y * (roomSize + 1)+roomSize;
+        coordinates[1, 0] = 2+ x * (roomSize + 1)+width;
+        coordinates[1, 1] = 3+ y * (roomSize + 1)+roomSize;
         return coordinates;
     }
     
@@ -164,8 +164,8 @@ public class TerrainSpawner : NetworkBehaviour{
         int[,] coordinates = new int[2, 2];
         coordinates[0, 0] = 1+ x * (roomSize + 1);
         coordinates[0, 1] = 1+ y * (roomSize + 1)-width;
-        coordinates[1, 0] = 1+ x * (roomSize + 1)+roomSize;
-        coordinates[1, 1] = 1+ y * (roomSize + 1)+width;
+        coordinates[1, 0] = 3+ x * (roomSize + 1)+roomSize;
+        coordinates[1, 1] = 2+ y * (roomSize + 1)+width;
         return coordinates;
     }
 
@@ -175,21 +175,26 @@ public class TerrainSpawner : NetworkBehaviour{
         float xf = x + mapOffset + 0.5f;
         float yf = y + mapOffset + 0.5f;
         //Debug.Log(xf+" "+yf+" --- "+mapOffset+" --- "+x+" "+y);
-        obstacles.Add(Instantiate(ObstaclePrefab, new Vector3(xf , yf ), Quaternion.identity));
+        GameObject obstacle = Instantiate(ObstaclePrefab, new Vector3(xf, yf), Quaternion.identity);
+        obstacle.gameObject.transform.localScale = new Vector3(1, 1);
+        obstacles.Add(obstacle);
         roomMap[x, y] = active;
     }
 
-    private void populateArea(int[,] coordinates)
+    private void populateArea(int[,] coordinates,int mode=0)
     {
         for (int i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
-            for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j) {
-                if (random.NextDouble() <= obstacleProbability)
+            for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j)
+            {
+                if (roomMap[i, j] == 0)
                 {
-                    addObstacles(i,j);
+                    if (random.NextDouble() <= obstacleProbability || mode != 0)
+                    {
+                        addObstacles(i, j);
+                    }
                 }
             }
-        }   
-        
+        }
     }
     private void setArea(int[,] coordinates,short v)
     { // add translation from map to real coordinates and create alternative "get coordinates"
@@ -298,14 +303,8 @@ public class TerrainSpawner : NetworkBehaviour{
                         wallHR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
                         obstacles.Add(wallHL);
                         obstacles.Add(wallHR);
-                        setArea(addMargin(getBottomWallCoordinates(i+roomOffset, j+roomOffset), 1), wall);
-                    }//no need to set are inactive if wall is not created, because this is the default
-                    else
-                    {
-                        populateArea(addMargin(getBottomWallCoordinates(i+roomOffset, j+roomOffset,3),-2));
-                        //need to remove margin(2) (margin(1)+wall natural width), but still populate margin(1) in non-overlapping part
-                        //hence this abomination
-                    }
+                        setArea(addMargin(getBottomWallCoordinates(i+roomOffset, j+roomOffset), 0), wall);
+                    }//no need to set area inactive if wall is not created, that is the default
                 }
 
                 //vertical walls
@@ -325,10 +324,6 @@ public class TerrainSpawner : NetworkBehaviour{
                         obstacles.Add(wallVU);
                         obstacles.Add(wallVB);
                         setArea(addMargin(getLeftWallCoordinates(i + roomOffset, j + roomOffset), 1), wall);
-                    }
-                    else
-                    {
-                        populateArea(addMargin(getLeftWallCoordinates(i+roomOffset, j+roomOffset,3),-2));
                     }
                 }
             }
@@ -351,17 +346,10 @@ public class TerrainSpawner : NetworkBehaviour{
     void addObstacles()
     {
         buildRoomsWalls();
-        for (int x = 0; x < roomsInRow; ++x) {
-            for (int y = 0; y < roomsInRow; ++y) {
-                if (x != (roomsInRow - 1) / 2 || y != (roomsInRow - 1) / 2) {
-                    populateArea(addMargin(getRoomMapCoordinates(x, y),-1));
-                    //remove one margin to leave space between obstacles and room wall
-                }
-            }
-        }
         setArea(addMargin(new int[,]{{2+(roomSize+1)*(roomsInRow-1)/2,2+(roomSize+1)*(roomsInRow-1)/2},
             {2+(roomSize+1)*(roomsInRow-1)/2+roomSize,2+(roomSize+1)*(roomsInRow-1)/2+roomSize}},2),wall);
         //set spawn area (with margin) as a wall  
+        populateArea(new int[,]{{3,3},{mapSize-3,mapSize-3}});
     }
 }
 /*
