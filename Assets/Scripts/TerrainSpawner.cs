@@ -20,6 +20,12 @@ public class TerrainSpawner : NetworkBehaviour{
     private int mapSize;
     private int mapOffset;
     //for translation from map coordinates to real coordinates
+    //cell state
+    private const short inactive = 0;
+    private const short active = 1;
+    private const short emerging = 2;
+    private const short fadeing = 3;
+    private const short wall = 4;
 
     private List<GameObject> obstacles=new List<GameObject>();
 
@@ -72,8 +78,8 @@ public class TerrainSpawner : NetworkBehaviour{
         {
             if (seed == -1)
             {
-                requestSendNewSeedServerRPC();
                 onStartUp();
+                requestSendNewSeedServerRPC();
             }
             refreshObstacles("n");
         }
@@ -81,8 +87,8 @@ public class TerrainSpawner : NetworkBehaviour{
         {
             if (seed == -1 && !NetworkManager.Singleton.IsServer)
             {
-                requestSendSeedServerRPC();
                 onStartUp();
+                requestSendNewSeedServerRPC();
             }
 
             refreshObstacles("n");
@@ -97,7 +103,7 @@ public class TerrainSpawner : NetworkBehaviour{
         coordinates[1, 1] += y;
         return coordinates;
     }
-    private float[,] addMargin(float[,] coordinates,float scale)
+    private int[,] addMargin(int[,] coordinates,int scale)
     {
         coordinates[0, 0] -= scale;
         coordinates[0, 1] -= scale;
@@ -108,63 +114,77 @@ public class TerrainSpawner : NetworkBehaviour{
     
     //x and y are in [0,roomsInRow-1]
     //return is int[2,2] x and y of bottom-left and upper-right corner
-    private float[,] getRoomCoordinates(int x, int y)
+    private int[,] getRoomMapCoordinates(int x, int y)
     {
         if (x >= roomsInRow || x < 0 || y >= roomsInRow || y < 0)
         {
             throw new ArithmeticException("room x and y must be within [0,roomsInRow-1]");
         }
+        int[,] coordinates = new int[2, 2];
+        coordinates[0, 0] = 2 + x * (roomSize + 1);
+        coordinates[0, 1] = 2 + y * (roomSize + 1);
+        coordinates[1, 0] = 2 + x * (roomSize + 1)+roomSize;
+        coordinates[1, 1] = 2 + y * (roomSize + 1)+roomSize;
+        return coordinates;
+    }
+
+    private float[,] toRealCoordinates(int[,] mapCoordinates)
+    {
         float[,] coordinates = new float[2, 2];
-        x -= (roomsInRow - 1) / 2;
-        y -= (roomsInRow - 1) / 2;
-        coordinates[0, 0] = -roomSize / 2 + x * (roomSize + 1);
-        coordinates[0, 1] = -roomSize / 2 + y * (roomSize + 1);
-        coordinates[1, 0] = +roomSize / 2 + x * (roomSize + 1);
-        coordinates[1, 1] = +roomSize / 2 + y * (roomSize + 1);
-        return translateCoordinates(coordinates,0.5f,0.5f);//to accomodate offset of the center point of the obstacle
+        coordinates[0, 0] = mapCoordinates[0, 0] + mapOffset;
+        coordinates[0, 1] = mapCoordinates[0, 1] + mapOffset;
+        coordinates[1, 0] = mapCoordinates[1, 0] + mapOffset;
+        coordinates[1, 1] = mapCoordinates[1, 1] + mapOffset;
+        return coordinates;
     }
     //x and y are in [0,roomsInRow-1]
     //return is int[2,2] x and y of bottom-left and upper-right corner
     //including margin of width 1 around the wall
-    private float[,] getLeftWallCoordinates(int x, int y)
+    private int[,] getLeftWallCoordinates(int x, int y)
     {
         if (x >= roomsInRow || x < 0 || y >= roomsInRow || y < 0)
         {
             throw new ArithmeticException("room x and y must be within [0,roomsInRow-1]");
         }
-        float[,] coordinates = new float[2, 2];
-        x -= (roomsInRow - 1) / 2;
-        y -= (roomsInRow - 1) / 2;
-        coordinates[0, 0] = -roomSize / 2 + x * (roomSize + 1)-1;
-        coordinates[0, 1] = -roomSize / 2 + y * (roomSize + 1)-1;
-        coordinates[1, 0] = -roomSize / 2 + x * (roomSize + 1)+1;
-        coordinates[1, 1] = +roomSize / 2 + y * (roomSize + 1)+1;
-        return translateCoordinates(coordinates,0.5f,0.5f);//to accomodate offset of the center point of the obstacle
+        int[,] coordinates = new int[2, 2];
+        coordinates[0, 0] = 1+ x * (roomSize + 1);
+        coordinates[0, 1] = 1+ y * (roomSize + 1);
+        coordinates[1, 0] = 1+ x * (roomSize + 1);
+        coordinates[1, 1] = 1+ y * (roomSize + 1)+roomSize;
+        return coordinates;
     }
-    private float[,] getBottomWallCoordinates(int x, int y)
+    
+    private int[,] getBottomWallCoordinates(int x, int y)
     {
         if (x >= roomsInRow || x < 0 || y >= roomsInRow || y < 0)
         {
             throw new ArithmeticException("room x and y must be within [0,roomsInRow-1]");
         }
-        float[,] coordinates = new float[2, 2];
-        x -= (roomsInRow - 1) / 2;
-        y -= (roomsInRow - 1) / 2;
-        coordinates[0, 0] = -roomSize / 2 + x * (roomSize + 1)-1;
-        coordinates[0, 1] = -roomSize / 2 + y * (roomSize + 1)-1;
-        coordinates[1, 0] = +roomSize / 2 + x * (roomSize + 1)+1;
-        coordinates[1, 1] = -roomSize / 2 + y * (roomSize + 1)+1;
-        return translateCoordinates(coordinates,0.5f,0.5f);//to accomodate offset of the center point of the obstacle
+        int[,] coordinates = new int[2, 2];
+        coordinates[0, 0] = 1+ x * (roomSize + 1);
+        coordinates[0, 1] = 1+ y * (roomSize + 1);
+        coordinates[1, 0] = 1+ x * (roomSize + 1)+roomSize;
+        coordinates[1, 1] = 1+ y * (roomSize + 1);
+        return coordinates;
     }
 
-    private void populateArea(float[,] coordinates)
+    private void addObstacles(int x, int y)
     {
-        Debug.Log(coordinates[0,0]+" "+coordinates[0,1]+" : "+coordinates[1,0]+" "+coordinates[1,1]+" ");
-        for (float i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
-            for (float j = coordinates[0, 1]; j < coordinates[1, 1]; ++j) {
+        //translate map to real coordinates and refer to center of the obstacle, not its bottom-left corner
+        float xf = x + mapOffset + 0.5f;
+        float yf = y + mapOffset + 0.5f;
+        //Debug.Log(xf+" "+yf+" --- "+mapOffset+" --- "+x+" "+y);
+        obstacles.Add(Instantiate(ObstaclePrefab, new Vector3(xf , yf ), Quaternion.identity));
+        roomMap[x, y] = active;
+    }
+
+    private void populateArea(int[,] coordinates)
+    {
+        for (int i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
+            for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j) {
                 if (random.NextDouble() <= obstacleProbability)
                 {
-                    obstacles.Add(Instantiate(ObstaclePrefab, new Vector3(i , j ), Quaternion.identity));
+                    addObstacles(i,j);
                 }
             }
         }   
@@ -173,11 +193,11 @@ public class TerrainSpawner : NetworkBehaviour{
     private void setArea(int[,] coordinates,short v)
     { // add translation from map to real coordinates and create alternative "get coordinates"
         
-      //for (int i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
-      //    for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j) {
-      //        roomMap[i, j] = v;
-      //    }
-      //}   
+        for (int i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
+            for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j) {
+                roomMap[i, j] = v;
+            }
+        }   
     }
 
     private void onStartUp()
@@ -194,11 +214,10 @@ public class TerrainSpawner : NetworkBehaviour{
         {
             throw new ArithmeticException("obstacleProbability needs to be within range [0:1]");
         }
-
+        mapOffset = -(roomSize / 2 + (roomSize + 1) * (roomsInRow - 1) / 2 + 2);
         mapSize = roomSize * roomsInRow +  (roomsInRow + 1) + 2;
         roomMap = new short[mapSize,mapSize];
-        mapOffset = -(roomSize / 2 + (roomSize + 1) * (roomsInRow - 1) / 2 + 2);
-        setArea(new int[,]{{0, 0}, {mapSize, mapSize}},0);
+        setArea(new int[,]{{0, 0}, {mapSize, mapSize}},inactive);
         float innerWallDist = (roomSize + 1f) / 2f;
         float innerWallLength = (roomSize - doorSize) / 2f + 1f;
         float innerWallOffset = (roomSize - innerWallLength) / 2f + 1f;
@@ -239,7 +258,6 @@ public class TerrainSpawner : NetworkBehaviour{
         outerWallB.gameObject.transform.localScale = new Vector3( outerWallLength,1);
         
 
-        buildRoomsWalls();
     }
 
     private void buildRoomsWalls()
@@ -271,6 +289,8 @@ public class TerrainSpawner : NetworkBehaviour{
                     GameObject wallHR = Instantiate(ObstaclePrefab,
                         new Vector3(-innerWallOffset + (i * shift), (-innerWallDist + shift * j)), Quaternion.identity);
                     wallHR.gameObject.transform.localScale = new Vector3(innerWallLength, 1);
+                    obstacles.Add(wallHL);
+                    obstacles.Add(wallHR);
                 }
 
                 //vertical walls
@@ -283,6 +303,8 @@ public class TerrainSpawner : NetworkBehaviour{
                     GameObject wallVB = Instantiate(ObstaclePrefab,
                         new Vector3((-innerWallDist + shift * i), -innerWallOffset + (j * shift)), Quaternion.identity);
                     wallVB.gameObject.transform.localScale = new Vector3(1, innerWallLength);
+                    obstacles.Add(wallVU);
+                    obstacles.Add(wallVB);
                 }
             }
         }
@@ -291,21 +313,23 @@ public class TerrainSpawner : NetworkBehaviour{
     void destroyObstacles()
     {
         List<GameObject> toRemove = obstacles;
-      foreach (GameObject gameObject in toRemove)
-      {
-          Destroy(gameObject);
-      }
-
-      obstacles = new List<GameObject>();
-
+        foreach (GameObject gameObject in toRemove)
+        {
+            Destroy(gameObject);
+        }
+       
+        obstacles = new List<GameObject>();
+        setArea(new int[,]{{0,0},{mapSize,mapSize}},inactive);    
     }
 
     void addObstacles()
     {
+        buildRoomsWalls();
         for (int x = 0; x < roomsInRow; ++x) {
             for (int y = 0; y < roomsInRow; ++y) {
                 if (x != (roomsInRow - 1) / 2 || y != (roomsInRow - 1) / 2) {
-                    populateArea(addMargin(getRoomCoordinates(x, y), -1));
+                    populateArea(addMargin(getRoomMapCoordinates(x, y),-1));
+                    //remove one margin to leave space between obstacles and room wall
                 }
             }
         }
