@@ -5,14 +5,14 @@ using UnityEngine;
 using Random = System.Random;
 
 public class TerrainSpawner : NetworkBehaviour{
-    public int initialServerSeed;
+    public int initialServerSeed=7312;
     private int seed=-1;
     public GameObject ObstaclePrefab;
-    public int roomSize=25;
+    public int roomSize=21;
     public int doorSize=5;
-    public int roomsInRow=5;
-    public float obstacleProbability=0.5f;
-    public float wallProbability=0.8f;
+    public int roomsInRow=7;
+    public float obstacleProbability=0.57f;
+    public float wallProbability=0.75f;
     private Random random=null;
     private Random initRandom;
     private short[,] roomMap;
