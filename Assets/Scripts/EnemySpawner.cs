@@ -14,6 +14,7 @@ public class EnemySpawner : MonoBehaviour{
     private float scale = 10f;
     private float range = 256;
 
+    //TODO: get room layout from obstacle spawner or move all spawners to terrain spawner
     void Awake(){
         random = new Random();
         m_ObjectPool = GameObject.FindWithTag("ObjectPool").GetComponent<NetworkObjectPool>();

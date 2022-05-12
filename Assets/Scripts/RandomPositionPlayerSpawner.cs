@@ -14,9 +14,13 @@ public class RandomPositionPlayerSpawner: MonoBehaviour
     [SerializeField]
     List<Vector3> m_SpawnPositions = new List<Vector3>() { Vector3.zero };
 
-    public Vector3 GetNextSpawnPosition(){
-        m_RoundRobinIndex = (m_RoundRobinIndex + 1) % m_SpawnPositions.Count;
-        return m_SpawnPositions[m_RoundRobinIndex];
+    public Vector3 GetNextSpawnPosition()
+    {
+        //TODO: get room size from obstacle spawner or move all spawners to terrain spawner
+        
+      //m_RoundRobinIndex = (m_RoundRobinIndex + 1) % m_SpawnPositions.Count;
+      //return m_SpawnPositions[m_RoundRobinIndex];
+        return Vector3.zero;
     }
     
     private void Awake()

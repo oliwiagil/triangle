@@ -1,0 +1,37 @@
+Checklist of prefabs to set for the project to run as intended (please expand it):
+1. Main Camera -> MinimapCamera
+    Camera - TargetTexture:
+        <- MinimapRenderTexture.renderTexture
+        
+2.  NetworkManager 
+    NetworkManager - NetworkPrefabs:
+        <- PlayerMul
+        <- BulletMul
+        <- BulletEnemyMul
+        <- EnemyMul
+        
+3. NetworkObjectPool
+    Network Object Pool (Script) - Pooled Prefabs List
+        <- BulletMul
+        <- BulletEnemyMul
+        <- EnemyMul
+        
+4. EnemySpawner
+    Enemy Spawner (Script) - Enemy Prefab
+        <- EnemyMul
+        
+5. terrainSpawner
+    terrain Spawner (Script) - Obstacle Prefab
+        <- ObstacleMul
+        
+6. Canvas -> RawImage
+    Raw Image
+        <- MinimapRenderTexture.renderTexture
+      
+7. EnemyMul  
+    enemy movement mul (script) - Bullet Prefab 
+        <- bulletEnemyMul
+    
+8. PlayerMul  
+    player control mul (script) - Bullet Prefab 
+        <- bulletMul
