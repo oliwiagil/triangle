@@ -4,10 +4,11 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Bullet
   - Enemy
   - ObjectPool
   - Barier
+  - EnemyBullet
+  - PlayerBullet
   layers:
   - Default
   - TransparentFX
