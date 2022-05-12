@@ -16,7 +16,7 @@ public class BulletMovementMul : NetworkBehaviour
     {
         if (!NetworkManager.Singleton.IsServer || !NetworkObject.IsSpawned){return; }
         
-        if (!(other.gameObject.CompareTag("PlayerBullet") || other.gameObject.CompareTag("EnemyBullet"))) {
+        if (!other.gameObject.CompareTag("PlayerBullet") && !other.gameObject.CompareTag("EnemyBullet")) {
             DestroyBullet();
         }
     }
