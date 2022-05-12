@@ -21,7 +21,7 @@ Checklist of prefabs to set for the project to run as intended (please expand it
         <- EnemyMul
         
 5. terrainSpawner
-    terrain Spawner (Script) - Obstacle Prefab
+    terrain Spawner (Script) - Terrain Spawner
         <- ObstacleMul
         
 6. Canvas -> RawImage
@@ -35,3 +35,5 @@ Checklist of prefabs to set for the project to run as intended (please expand it
 8. PlayerMul  
     player control mul (script) - Bullet Prefab 
         <- bulletMul
+
+9. ObstacleMul -> Tag -> Barrier

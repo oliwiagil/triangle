@@ -76,14 +76,13 @@ public class EnemyMovementMul : NetworkBehaviour
     {
         if (!NetworkManager.Singleton.IsServer || !NetworkObject.IsSpawned){return; }
 
-        if (other.gameObject.CompareTag("Bullet"))
+        if (other.gameObject.CompareTag("PlayerBullet"))
         {
             DecreaseHpServerRpc();
             if (health.Value <= 0)
             {
                 DestroyEnemy();
             }
-
         }
     }
 

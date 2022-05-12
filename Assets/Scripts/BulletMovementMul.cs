@@ -15,10 +15,9 @@ public class BulletMovementMul : NetworkBehaviour
     void OnTriggerEnter2D(Collider2D other)
     {
         if (!NetworkManager.Singleton.IsServer || !NetworkObject.IsSpawned){return; }
-
-        if (!other.gameObject.CompareTag("Bullet")) {
+        
+        if (!other.gameObject.CompareTag("PlayerBullet") && !other.gameObject.CompareTag("EnemyBullet")) {
             DestroyBullet();
         }
-
     }
 }
