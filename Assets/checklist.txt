@@ -16,24 +16,24 @@ Checklist of prefabs to set for the project to run as intended (please expand it
         <- BulletEnemyMul
         <- EnemyMul
         
-4. EnemySpawner
-    Enemy Spawner (Script) - Enemy Prefab
-        <- EnemyMul
         
-5. terrainSpawner
+4. terrainSpawner
     terrain Spawner (Script) - Terrain Spawner
         <- ObstacleMul
+        Enemy Prefab <- EnemyMul
+        spawnDelay <- 1
+        spawnTime <- 3 
         
-6. Canvas -> RawImage
+5. Canvas -> RawImage
     Raw Image
         <- MinimapRenderTexture.renderTexture
       
-7. EnemyMul  
+6. EnemyMul  
     enemy movement mul (script) - Bullet Prefab 
         <- bulletEnemyMul
     
-8. PlayerMul  
+7. PlayerMul  
     player control mul (script) - Bullet Prefab 
         <- bulletMul
 
-9. ObstacleMul -> Tag -> Barrier
+8. ObstacleMul -> Tag -> Barrier
