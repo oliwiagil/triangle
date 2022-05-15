@@ -5,6 +5,13 @@ using UnityEngine;
 using Random = System.Random;
 
 public class TerrainSpawner : NetworkBehaviour{
+    private GameObject enemy;
+    public float spawnDelay;
+    public float spawnTime;
+    NetworkObjectPool m_ObjectPool;
+    public GameObject EnemyPrefab;
+    private float scale = 10f;
+    private float range = 256;
     public int initialServerSeed=7312;
     private int seed=-1;
     public GameObject ObstaclePrefab;
@@ -17,7 +24,6 @@ public class TerrainSpawner : NetworkBehaviour{
     private Random initRandom;
     private short[,] roomMap;
     private static readonly int[,] cross = new int[,] {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
-
     private int testing = 0;
     //(0,0) is one bellow and to the left of bottom-left corner of outer wall,
     //max is roomSize*roomsInRow+1*(roomsInRow+1)+2 = (rooms + walls + outer margin)
@@ -36,8 +42,31 @@ public class TerrainSpawner : NetworkBehaviour{
     void Awake()
     {   
         initRandom = new Random(initialServerSeed);
+        m_ObjectPool = GameObject.FindWithTag("ObjectPool").GetComponent<NetworkObjectPool>();
+        InvokeRepeating ("addEnemyServer", spawnDelay, spawnTime);
     }
-
+    void addEnemyServer()
+    {
+        if (!NetworkManager.Singleton.IsServer){ return; }
+        
+        int x = random.Next(0, (int) mapSize);
+        int y = random.Next(0, (int) mapSize);
+        while (roomMap[x, y] == active || roomMap[x, y] == wall)
+        {
+            x = random.Next(0, (int) mapSize);
+            y = random.Next(0, (int) mapSize);
+        }
+        GameObject enemy = m_ObjectPool.GetNetworkObject(EnemyPrefab,
+            new Vector3(x + mapOffset,y + mapOffset ,0), new Quaternion(0,0,0,0)).gameObject;
+        
+        Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
+        Vector3 v = new Vector3(random.Next((int) -range, (int) range) / range * scale,
+            random.Next((int) -range, (int) range) / range * scale, 0);
+        v.Normalize();
+        rb.AddForce(v * 1, ForceMode2D.Impulse);
+    
+        enemy.GetComponent<NetworkObject>().Spawn(true);
+    }
     public void onSeedChange(int newSeed)
     {
         if (newSeed == seed) {return; }
@@ -62,6 +91,15 @@ public class TerrainSpawner : NetworkBehaviour{
     {
             int newSeed = Math.Abs(initRandom.Next());
             onSeedChange(newSeed);
+ 			GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+			int x;
+      	    int y;
+       		foreach (GameObject target in players)
+        	{
+				x = random.Next((int) -roomSize/2, (int) roomSize/2);
+      	    	y = random.Next((int) -roomSize/2, (int) roomSize/2);
+                target.transform.position = new Vector3(x,y,0);
+      	  	}
             recieveSeedClientRPC(newSeed);
             //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
             //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
