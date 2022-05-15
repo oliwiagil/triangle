@@ -91,6 +91,15 @@ public class TerrainSpawner : NetworkBehaviour{
     {
             int newSeed = Math.Abs(initRandom.Next());
             onSeedChange(newSeed);
+ 			GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+			int x;
+      	    int y;
+       		foreach (GameObject target in players)
+        	{
+				x = random.Next((int) -roomSize/2, (int) roomSize/2);
+      	    	y = random.Next((int) -roomSize/2, (int) roomSize/2);
+                target.transform.position = new Vector3(x,y,0);
+      	  	}
             recieveSeedClientRPC(newSeed);
             //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
             //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
