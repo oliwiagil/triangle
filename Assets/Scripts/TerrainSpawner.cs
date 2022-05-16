@@ -69,7 +69,7 @@ public class TerrainSpawner : NetworkBehaviour{
     }
     public void onSeedChange(int newSeed)
     {
-        Debug.Log("new seed!!!");
+        //Debug.Log("new seed!!!");
         if (newSeed == seed) {return; }
         seed = newSeed;
         random = new Random(seed);
@@ -80,13 +80,13 @@ public class TerrainSpawner : NetworkBehaviour{
     [ClientRpc]
     void recieveSeedClientRPC(int newSeed)
     {
-        Debug.Log("Server called");
+        //Debug.Log("Server called");
         onSeedChange(newSeed);
     }
     [ServerRpc(RequireOwnership = false)]
     public void requestSendSeedServerRPC()
     {
-        Debug.Log("player asked");
+        //Debug.Log("player asked");
         recieveSeedClientRPC(seed);
     }
     [ServerRpc(RequireOwnership = false)]
@@ -98,7 +98,7 @@ public class TerrainSpawner : NetworkBehaviour{
         onSeedChange(newSeed);
         recieveSeedClientRPC(newSeed);
         movePlayersToSpawnRoom();
-        Debug.Log("player called");
+        //Debug.Log("player called");
         //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
         //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
         //and potentially overwrites new seed with the old one
@@ -264,7 +264,7 @@ public class TerrainSpawner : NetworkBehaviour{
                 all += 1;
             }
         }
-        Debug.Log("Filled: "+(100*count/all)+"%");
+        //Debug.Log("Filled: "+(100*count/all)+"%");
     }
     private void setArea(int[,] coordinates,short v)
     { // add translation from map to real coordinates and create alternative "get coordinates"
@@ -448,7 +448,7 @@ public class TerrainSpawner : NetworkBehaviour{
 
             outVar += "\n";
         }
-        Debug.Log(outVar);
+        //Debug.Log(outVar);
     }
 
     bool within(int x, int y,int[,] coordinates)
@@ -596,21 +596,20 @@ public class TerrainSpawner : NetworkBehaviour{
 |   ||   ||   ||   ||   |
 -------------------------
 <-- TODO
--- combine enemy spawner with terrainSpawner 
-    (enemies spawning in the room where the player is  and rooms around it 
-    (use within() and getRoomCoordinates (apply mapOffset when spawning)))
-    TODO
--- combine player spawner with terrainSpawner, spawn them in main (middle) room and move them back to it when onSeedChange is called and terrain is regenerated
-
-    TODO: add objectives
-- k collectibles (up to 1 per room) for k players to be returned to starting room
+-- spawn enemies in room with a player (or adjacent)
+    TODO --> add objectives
+- k collectibles (up to 1 per room) for k players to be returned to starting room (in outer most ring of rooms) 
 - each player collects ONE
-- scaling difficulty
+- scaling difficulty?
+- power-ups on advancing a level
 <-- TODO
 - hud with player name + health bar + some stats?<-- integrate with player name (and class or some) (corner of the screen)
 - enemy "patrols" room until player enters room, than does something
 <-- TODO
 - health bars for everyone  (under objects)
+
+<-- TODO
+- optimize obstacles CUDA/multi-threading + merge obstacles if possible
 
 -----------------------
 |     ...|            |
