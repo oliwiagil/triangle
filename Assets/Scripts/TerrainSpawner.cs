@@ -43,25 +43,25 @@ public class TerrainSpawner : NetworkBehaviour{
     {   
         initRandom = new Random(initialServerSeed);
         m_ObjectPool = GameObject.FindWithTag("ObjectPool").GetComponent<NetworkObjectPool>();
-        InvokeRepeating ("addEnemyServer", spawnDelay, spawnTime);
     }
     void addEnemyServer()
     {
         if (!NetworkManager.Singleton.IsServer){ return; }
         
-        int x = random.Next(0, (int) mapSize);
-        int y = random.Next(0, (int) mapSize);
+        Random localRand = new Random();
+        int x = localRand.Next(0, (int) mapSize);
+        int y = localRand.Next(0, (int) mapSize);
         while (roomMap[x, y] == active || roomMap[x, y] == wall)
         {
-            x = random.Next(0, (int) mapSize);
-            y = random.Next(0, (int) mapSize);
+            x = localRand.Next(0, (int) mapSize);
+            y = localRand.Next(0, (int) mapSize);
         }
         GameObject enemy = m_ObjectPool.GetNetworkObject(EnemyPrefab,
             new Vector3(x + mapOffset,y + mapOffset ,0), new Quaternion(0,0,0,0)).gameObject;
         
         Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
-        Vector3 v = new Vector3(random.Next((int) -range, (int) range) / range * scale,
-            random.Next((int) -range, (int) range) / range * scale, 0);
+        Vector3 v = new Vector3(localRand.Next((int) -range, (int) range) / range * scale,
+            localRand.Next((int) -range, (int) range) / range * scale, 0);
         v.Normalize();
         rb.AddForce(v * 1, ForceMode2D.Impulse);
     
@@ -69,6 +69,7 @@ public class TerrainSpawner : NetworkBehaviour{
     }
     public void onSeedChange(int newSeed)
     {
+        Debug.Log("new seed!!!");
         if (newSeed == seed) {return; }
         seed = newSeed;
         random = new Random(seed);
@@ -79,31 +80,43 @@ public class TerrainSpawner : NetworkBehaviour{
     [ClientRpc]
     void recieveSeedClientRPC(int newSeed)
     {
+        Debug.Log("Server called");
         onSeedChange(newSeed);
     }
     [ServerRpc(RequireOwnership = false)]
     public void requestSendSeedServerRPC()
     {
+        Debug.Log("player asked");
         recieveSeedClientRPC(seed);
     }
     [ServerRpc(RequireOwnership = false)]
     public void requestSendNewSeedServerRPC()
     {
-            int newSeed = Math.Abs(initRandom.Next());
-            onSeedChange(newSeed);
- 			GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-			int x;
-      	    int y;
-       		foreach (GameObject target in players)
-        	{
-				x = random.Next((int) -roomSize/2, (int) roomSize/2);
-      	    	y = random.Next((int) -roomSize/2, (int) roomSize/2);
-                target.transform.position = new Vector3(x,y,0);
-      	  	}
-            recieveSeedClientRPC(newSeed);
-            //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
-            //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
-            //and potentially overwrites new seed with the old one
+    
+        //if (!NetworkManager.Singleton.IsServer){ return; }
+        int newSeed = Math.Abs(initRandom.Next());
+        onSeedChange(newSeed);
+        recieveSeedClientRPC(newSeed);
+        movePlayersToSpawnRoom();
+        Debug.Log("player called");
+        //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
+        //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
+        //and potentially overwrites new seed with the old one
+    }
+
+    private void movePlayersToSpawnRoom()
+    {
+        if (!NetworkManager.Singleton.IsServer){ return; }
+        Random localRand = new Random();
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        int x;
+        int y;
+        foreach (GameObject target in players)
+        {
+            x = localRand.Next((int) -roomSize / 2, (int) roomSize / 2);
+            y = localRand.Next((int) -roomSize / 2, (int) roomSize / 2);
+            target.transform.position = new Vector3(x, y, 0);
+        }
     }
 
     void refreshObstacles(string keyBind)
@@ -130,7 +143,7 @@ public class TerrainSpawner : NetworkBehaviour{
             if (seed == -1 && !NetworkManager.Singleton.IsServer)
             {
                 onStartUp();
-                requestSendNewSeedServerRPC();
+                requestSendSeedServerRPC();
             }
 
             refreshObstacles("n");
@@ -326,7 +339,7 @@ public class TerrainSpawner : NetworkBehaviour{
         GameObject outerWallB = Instantiate(ObstaclePrefab, new Vector3(0f,-outerWallDist), Quaternion.identity);
         outerWallB.gameObject.transform.localScale = new Vector3( outerWallLength,1);
         
-
+        InvokeRepeating ("addEnemyServer", spawnDelay, spawnTime);
     }
 
     private void buildRoomsWalls()
