@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = System.Random;
 
 public class EnemyMovementMul : NetworkBehaviour
@@ -11,10 +12,12 @@ public class EnemyMovementMul : NetworkBehaviour
     public GameObject BulletPrefab;
     private GameObject player;
 
+    public Image healthBar;
+
     public float bulletForce = 5;
     public float fireRate = 3;
 
-    public NetworkVariable<int> health = new NetworkVariable<int>();
+    NetworkVariable<int> health = new NetworkVariable<int>();
     private Random random;
     private float scale = 10f;
     private float range = 256;
@@ -61,6 +64,9 @@ public class EnemyMovementMul : NetworkBehaviour
         Vector2 direction = player.transform.position - transform.position;
         float angle = Vector2.SignedAngle(Vector2.up, direction);
         transform.eulerAngles = new Vector3 (0, 0, angle);
+
+        healthBar.transform.rotation = Quaternion.Euler (0, 0, 0);
+        healthBar.transform.position = transform.position + new Vector3 (0, 0.9f,0);
     }
     
     private void DestroyEnemy()

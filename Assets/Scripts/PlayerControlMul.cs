@@ -2,6 +2,7 @@
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Assertions;
 
 public class PlayerControlMul : NetworkBehaviour
@@ -10,6 +11,8 @@ public class PlayerControlMul : NetworkBehaviour
 
     NetworkObjectPool m_ObjectPool;
     public GameObject BulletPrefab;
+
+    public Image healthBar;
 
     public float speed = 5;
 
@@ -58,6 +61,9 @@ public class PlayerControlMul : NetworkBehaviour
         {
             UpdateClient();
         }
+
+        healthBar.transform.rotation = Quaternion.Euler (0, 0, 0);
+        healthBar.transform.position = transform.position + new Vector3 (0, 1f,0);
     }
 
     void LateUpdate()
