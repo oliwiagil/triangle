@@ -82,19 +82,14 @@ public class EnemyMovementMul : NetworkBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!NetworkObject.IsSpawned){return; }
+        if (!NetworkObject.IsSpawned || !NetworkManager.Singleton.IsServer 
+            || !other.gameObject.CompareTag("PlayerBullet")){return; }
 
-        if (!other.gameObject.CompareTag("PlayerBullet")){return; }
-
-        if(NetworkManager.Singleton.IsServer)
+        DecreaseHpServerRpc();
+        if (health.Value <= 0)
         {
-            DecreaseHpServerRpc();
-            if (health.Value <= 0)
-            {
-                DestroyEnemy();
-            }
+            DestroyEnemy();
         }
-        
     }
 
     void Fire()

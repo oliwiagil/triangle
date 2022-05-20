@@ -68,7 +68,7 @@ public class PlayerControlMul : NetworkBehaviour
 
     void LateUpdate()
     {
-        //IsLocaPlayer - true if this object is the one that represents the player on the local machine
+        //IsLocalPlayer - true if this object is the one that represents the player on the local machine
         if (IsLocalPlayer)
         {
             // center camera on player
