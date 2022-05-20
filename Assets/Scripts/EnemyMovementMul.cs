@@ -18,6 +18,8 @@ public class EnemyMovementMul : NetworkBehaviour
     public float fireRate = 3;
 
     NetworkVariable<int> health = new NetworkVariable<int>();
+    private int maxHealth=3;
+
     private Random random;
     private float scale = 10f;
     private float range = 256;
@@ -80,9 +82,11 @@ public class EnemyMovementMul : NetworkBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!NetworkManager.Singleton.IsServer || !NetworkObject.IsSpawned){return; }
+        if (!NetworkObject.IsSpawned){return; }
 
-        if (other.gameObject.CompareTag("PlayerBullet"))
+        if (!other.gameObject.CompareTag("PlayerBullet")){return; }
+
+        if(NetworkManager.Singleton.IsServer)
         {
             DecreaseHpServerRpc();
             if (health.Value <= 0)
@@ -90,6 +94,7 @@ public class EnemyMovementMul : NetworkBehaviour
                 DestroyEnemy();
             }
         }
+        
     }
 
     void Fire()
@@ -114,12 +119,23 @@ public class EnemyMovementMul : NetworkBehaviour
     void DecreaseHpServerRpc()
     {
         health.Value -= 1;
+        DecreaseHpClientRpc(health.Value);
+    }
+
+    [ClientRpc]
+    void DecreaseHpClientRpc(int currentHealth)
+    {
+        int healthBarWidth=220;
+        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth*currentHealth)/maxHealth, 20);
+        byte maxByteValue=255;
+        byte green=(byte)((maxByteValue*currentHealth)/maxHealth);
+        healthBar.color=new Color32((byte)(maxByteValue-green),green,0,maxByteValue);
     }
     
     [ServerRpc]
     void SetHpServerRpc()
     {
-        health.Value = 3;
+        health.Value = maxHealth;
     }
 	
 	void ChangeMovement()

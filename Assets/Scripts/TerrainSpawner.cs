@@ -47,7 +47,7 @@ public class TerrainSpawner : NetworkBehaviour{
     void addEnemyServer()
     {
         if (!NetworkManager.Singleton.IsServer){ return; }
-        
+
         Random localRand = new Random();
         int x = localRand.Next(0, (int) mapSize);
         int y = localRand.Next(0, (int) mapSize);
