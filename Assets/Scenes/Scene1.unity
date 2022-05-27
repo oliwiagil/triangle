@@ -158,7 +158,7 @@ MonoBehaviour:
     PrewarmCount: 0
   - Prefab: {fileID: 100000, guid: 27285d37bf5903a41a915fa7f5e4c63b, type: 3}
     PrewarmCount: 0
-  - Prefab: {fileID: 2335235116876632915, guid: 448f01d23f1aa264e95234749da64aba, type: 3}
+  - Prefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
     PrewarmCount: 0
 --- !u!4 &371565334
 Transform:
@@ -199,7 +199,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -557,7 +557,7 @@ MonoBehaviour:
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
     - Override: 0
-      Prefab: {fileID: 2335235116876632915, guid: 448f01d23f1aa264e95234749da64aba, type: 3}
+      Prefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
       SourcePrefabToOverride: {fileID: 0}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
@@ -703,7 +703,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   spawnDelay: 0
   spawnTime: 0.2
-  EnemyPrefab: {fileID: 2335235116876632915, guid: 448f01d23f1aa264e95234749da64aba, type: 3}
+  EnemyPrefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 9c9fbfacc89d740408bd73973755ef5b, type: 3}
   roomSize: 21

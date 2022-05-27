@@ -69,6 +69,27 @@ public class EnemyMovementMul : NetworkBehaviour
 
         healthBar.transform.rotation = Quaternion.Euler (0, 0, 0);
         healthBar.transform.position = transform.position + new Vector3 (0, 0.9f,0);
+    
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        foreach (GameObject target in players)
+        {
+            Vector2 direction2 = target.transform.position - transform.position;
+            //vector.magnitude - returns the length of vector
+            float distance = direction2.magnitude;
+            direction2.Normalize();
+
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction2, distance);
+            Debug.Log(distance);
+            if (hit.collider == null)
+            {
+                Debug.DrawRay(transform.position, direction2* distance, Color.green);
+            }
+            else
+            {
+                Debug.DrawRay(transform.position, direction2* hit.distance , Color.white);
+            }
+        }
+        
     }
     
     private void DestroyEnemy()
