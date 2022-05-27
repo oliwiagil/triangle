@@ -9,7 +9,7 @@ using System.Linq;
 public class EnemyMovementMul : NetworkBehaviour
 {
     static string s_ObjectPoolTag = "ObjectPool";
-    NetworkObjectPool m_ObjectPool;
+    private NetworkObjectPool m_ObjectPool;
     public GameObject BulletPrefab;
     private GameObject player;
 
@@ -18,7 +18,7 @@ public class EnemyMovementMul : NetworkBehaviour
     public float bulletForce = 5;
     public float fireRate = 3;
 
-    NetworkVariable<int> health = new NetworkVariable<int>();
+    private NetworkVariable<int> health = new NetworkVariable<int>();
     private int maxHealth=3;
 
     private Random random;
@@ -28,10 +28,13 @@ public class EnemyMovementMul : NetworkBehaviour
     private bool seePlayer = false;
     private bool randomMovementOn = true;
 
+    private Rigidbody2D rigidbody2D;
+
 	void Awake()
 	{
 		random = new Random();
         m_ObjectPool = GameObject.FindWithTag(s_ObjectPoolTag).GetComponent<NetworkObjectPool>();
+        rigidbody2D = NetworkObject.GetComponent<Rigidbody2D>();
     }
 
     void Start()
@@ -85,11 +88,10 @@ public class EnemyMovementMul : NetworkBehaviour
                 randomMovementOn = false;
             }
 
-            Rigidbody2D rb = NetworkObject.GetComponent<Rigidbody2D>();
             Vector2 direction = player.transform.position - transform.position;
             float angle = Vector2.SignedAngle(Vector2.up, direction);
             transform.eulerAngles = new Vector3 (0, 0, angle);
-            rb.velocity = transform.TransformDirection(Vector2.up);
+            rigidbody2D.velocity = transform.TransformDirection(Vector2.up);
         }
         else {
             seePlayer = false;
@@ -176,12 +178,11 @@ public class EnemyMovementMul : NetworkBehaviour
 	[ServerRpc]
 	void ChangeMovementServerRpc()
 	{		
-		Rigidbody2D rb = NetworkObject.GetComponent<Rigidbody2D>();
 		Vector3 v = new Vector3(random.Next((int) -range, (int) range) / range * scale,
         random.Next((int) -range, (int) range) / range * scale, 0);
     	v.Normalize();
 
-        rb.velocity = transform.TransformDirection(v);
-    	//rb.AddForce(v * 1, ForceMode2D.Impulse);
+        rigidbody2D.velocity = transform.TransformDirection(v);
+    	//rigidbody2D.AddForce(v * 1, ForceMode2D.Impulse);
 	}
 }
