@@ -37,8 +37,6 @@ public class TerrainSpawner : NetworkBehaviour{
     private const short emerging = 2;
     private const short wall = 3;
 
-    int enemies=0;
-
     private List<GameObject> obstacles=new List<GameObject>();
 
     void Awake()
@@ -48,9 +46,6 @@ public class TerrainSpawner : NetworkBehaviour{
     }
     void addEnemyServer()
     {
-        enemies+=1;
-        if(enemies>30){return;}
-
         if (!NetworkManager.Singleton.IsServer){ return; }
 
         Random localRand = new Random();

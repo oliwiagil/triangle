@@ -89,9 +89,14 @@ public class EnemyMovementMul : NetworkBehaviour
             }
 
             Vector2 direction = player.transform.position - transform.position;
-            float angle = Vector2.SignedAngle(Vector2.up, direction);
-            transform.eulerAngles = new Vector3 (0, 0, angle);
-            rigidbody2D.velocity = transform.TransformDirection(Vector2.up);
+            if(direction.sqrMagnitude>5){
+                float angle = Vector2.SignedAngle(Vector2.up, direction);
+                transform.eulerAngles = new Vector3 (0, 0, angle);
+                rigidbody2D.velocity = transform.TransformDirection(Vector2.up);
+            }
+            else{
+                rigidbody2D.velocity = new Vector2(0,0);
+            }
         }
         else {
             seePlayer = false;
