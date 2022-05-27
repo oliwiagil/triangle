@@ -4,6 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = System.Random;
+using System.Linq;
 
 public class EnemyMovementMul : NetworkBehaviour
 {
@@ -24,6 +25,9 @@ public class EnemyMovementMul : NetworkBehaviour
     private float scale = 10f;
     private float range = 256;
 
+    private bool seePlayer = false;
+    private bool randomMovementOn = true;
+
 	void Awake()
 	{
 		random = new Random();
@@ -40,56 +44,64 @@ public class EnemyMovementMul : NetworkBehaviour
         InvokeRepeating("Fire", fireRate, fireRate);
     }
 
-    public GameObject GetClosestPlayer()
+    public GameObject GetClosestVisiblePlayer()
     {
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        GameObject closest = null;
-        float minDistance = Mathf.Infinity;
-        Vector3 position = transform.position;
+        //players is sorted according to distance from this enemy
+        players = players.OrderBy(
+            x => (this.transform.position - x.transform.position).sqrMagnitude
+            ).ToArray();
 
         foreach (GameObject target in players)
         {
-            Vector3 diff = target.transform.position - position;
-            //vector.sqrMagnitude - returns the squared length of vector
-            float distance = diff.sqrMagnitude;
-            if (distance < minDistance)
+            Vector2 direction = target.transform.position - transform.position;
+            float distance = direction.magnitude;
+            direction.Normalize();
+
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, distance);
+            if (hit.collider == null)
             {
-                closest = target;
-                minDistance = distance;
+              //  Debug.DrawRay(transform.position, direction* distance, Color.green);
+                return target;
             }
+            /*
+            else
+            {
+                Debug.DrawRay(transform.position, direction* hit.distance , Color.white);
+            }
+            */
         }
-        return closest;
+        return null;
+    
     }
 
     void Update(){
-        player = GetClosestPlayer();
-        Vector2 direction = player.transform.position - transform.position;
-        float angle = Vector2.SignedAngle(Vector2.up, direction);
-        transform.eulerAngles = new Vector3 (0, 0, angle);
+        player = GetClosestVisiblePlayer();
+
+        if(player!=null){
+            seePlayer = true;
+            if(randomMovementOn){
+                CancelInvoke ("ChangeMovement");
+                randomMovementOn = false;
+            }
+
+            Rigidbody2D rb = NetworkObject.GetComponent<Rigidbody2D>();
+            Vector2 direction = player.transform.position - transform.position;
+            float angle = Vector2.SignedAngle(Vector2.up, direction);
+            transform.eulerAngles = new Vector3 (0, 0, angle);
+            rb.velocity = transform.TransformDirection(Vector2.up);
+        }
+        else {
+            seePlayer = false;
+        }
+    
+        if(!seePlayer && !randomMovementOn){
+            InvokeRepeating("ChangeMovement", 0, 3);
+            randomMovementOn = true;
+        }
 
         healthBar.transform.rotation = Quaternion.Euler (0, 0, 0);
         healthBar.transform.position = transform.position + new Vector3 (0, 0.9f,0);
-    
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        foreach (GameObject target in players)
-        {
-            Vector2 direction2 = target.transform.position - transform.position;
-            //vector.magnitude - returns the length of vector
-            float distance = direction2.magnitude;
-            direction2.Normalize();
-
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction2, distance);
-            Debug.Log(distance);
-            if (hit.collider == null)
-            {
-                Debug.DrawRay(transform.position, direction2* distance, Color.green);
-            }
-            else
-            {
-                Debug.DrawRay(transform.position, direction2* hit.distance , Color.white);
-            }
-        }
-        
     }
     
     private void DestroyEnemy()
