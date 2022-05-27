@@ -41,7 +41,6 @@ public class EnemyMovementMul : NetworkBehaviour
         }
 
 		InvokeRepeating("ChangeMovement", 0, 3);
-        InvokeRepeating("Fire", fireRate, fireRate);
     }
 
     public GameObject GetClosestVisiblePlayer()
@@ -82,6 +81,7 @@ public class EnemyMovementMul : NetworkBehaviour
             seePlayer = true;
             if(randomMovementOn){
                 CancelInvoke ("ChangeMovement");
+                InvokeRepeating("Fire", 0, fireRate);
                 randomMovementOn = false;
             }
 
@@ -97,6 +97,7 @@ public class EnemyMovementMul : NetworkBehaviour
     
         if(!seePlayer && !randomMovementOn){
             InvokeRepeating("ChangeMovement", 0, 3);
+            CancelInvoke ("Fire");
             randomMovementOn = true;
         }
 
