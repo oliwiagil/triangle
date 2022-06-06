@@ -2,6 +2,7 @@
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 using UnityEngine.Assertions;
 
 public class PlayerControlMul : NetworkBehaviour
@@ -10,6 +11,10 @@ public class PlayerControlMul : NetworkBehaviour
 
     NetworkObjectPool m_ObjectPool;
     public GameObject BulletPrefab;
+
+    public Image healthBar;
+    NetworkVariable<int> health = new NetworkVariable<int>();
+    private int maxHealth=25;
 
     public float speed = 5;
 
@@ -44,6 +49,7 @@ public class PlayerControlMul : NetworkBehaviour
         if (IsLocalPlayer)
         {
             SetNameServerRpc($"Player{OwnerClientId}");
+            SetHpServerRpc();
         }
     }
 
@@ -58,11 +64,14 @@ public class PlayerControlMul : NetworkBehaviour
         {
             UpdateClient();
         }
+
+        healthBar.transform.rotation = Quaternion.Euler (0, 0, 0);
+        healthBar.transform.position = transform.position + new Vector3 (0, 1f,0);
     }
 
     void LateUpdate()
     {
-        //IsLocaPlayer - true if this object is the one that represents the player on the local machine
+        //IsLocalPlayer - true if this object is the one that represents the player on the local machine
         if (IsLocalPlayer)
         {
             // center camera on player
@@ -165,4 +174,46 @@ public class PlayerControlMul : NetworkBehaviour
     {
         PlayerName.Value = name;
     }
+
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        if (!NetworkObject.IsSpawned || !NetworkManager.Singleton.IsServer 
+            || !other.gameObject.CompareTag("EnemyBullet")){return; }
+
+        if (health.Value <= 0)
+        {
+            //TODO
+            //GameOver
+        }
+        else
+        {
+            DecreaseHpServerRpc();
+        }
+    }
+
+    [ServerRpc]
+    void SetHpServerRpc()
+    {
+        health.Value = maxHealth;
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    void DecreaseHpServerRpc()
+    {
+        health.Value -= 1;
+        DecreaseHpClientRpc(health.Value);
+    }
+
+    [ClientRpc]
+    void DecreaseHpClientRpc(int currentHealth)
+    {
+        int healthBarWidth=220;
+        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth*currentHealth)/maxHealth, 20);
+        byte maxByteValue=255;
+        byte green=(byte)((maxByteValue*currentHealth)/maxHealth);
+        healthBar.color=new Color32((byte)(maxByteValue-green),green,0,maxByteValue);
+    }
+
+
 }

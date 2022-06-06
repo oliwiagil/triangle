@@ -2,27 +2,39 @@
 using System.ComponentModel;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = System.Random;
+using System.Linq;
 
 public class EnemyMovementMul : NetworkBehaviour
 {
     static string s_ObjectPoolTag = "ObjectPool";
-    NetworkObjectPool m_ObjectPool;
+    private NetworkObjectPool m_ObjectPool;
     public GameObject BulletPrefab;
     private GameObject player;
+
+    public Image healthBar;
 
     public float bulletForce = 5;
     public float fireRate = 3;
 
-    public NetworkVariable<int> health = new NetworkVariable<int>();
+    private NetworkVariable<int> health = new NetworkVariable<int>();
+    private int maxHealth=3;
+
     private Random random;
     private float scale = 10f;
     private float range = 256;
+
+    private bool seePlayer = false;
+    private bool randomMovementOn = true;
+
+    private Rigidbody2D rigidbody2D;
 
 	void Awake()
 	{
 		random = new Random();
         m_ObjectPool = GameObject.FindWithTag(s_ObjectPoolTag).GetComponent<NetworkObjectPool>();
+        rigidbody2D = NetworkObject.GetComponent<Rigidbody2D>();
     }
 
     void Start()
@@ -32,35 +44,72 @@ public class EnemyMovementMul : NetworkBehaviour
         }
 
 		InvokeRepeating("ChangeMovement", 0, 3);
-        InvokeRepeating("Fire", fireRate, fireRate);
     }
 
-    public GameObject GetClosestPlayer()
+    public GameObject GetClosestVisiblePlayer()
     {
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        GameObject closest = null;
-        float minDistance = Mathf.Infinity;
-        Vector3 position = transform.position;
+        //players is sorted according to distance from this enemy
+        players = players.OrderBy(
+            x => (this.transform.position - x.transform.position).sqrMagnitude
+            ).ToArray();
 
         foreach (GameObject target in players)
         {
-            Vector3 diff = target.transform.position - position;
-            //vector.sqrMagnitude - returns the squared length of vector
-            float distance = diff.sqrMagnitude;
-            if (distance < minDistance)
+            Vector2 direction = target.transform.position - transform.position;
+            float distance = direction.magnitude;
+            direction.Normalize();
+
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, direction, distance);
+            if (hit.collider == null)
             {
-                closest = target;
-                minDistance = distance;
+              //  Debug.DrawRay(transform.position, direction* distance, Color.green);
+                return target;
             }
+            /*
+            else
+            {
+                Debug.DrawRay(transform.position, direction* hit.distance , Color.white);
+            }
+            */
         }
-        return closest;
+        return null;
+    
     }
 
     void Update(){
-        player = GetClosestPlayer();
-        Vector2 direction = player.transform.position - transform.position;
-        float angle = Vector2.SignedAngle(Vector2.up, direction);
-        transform.eulerAngles = new Vector3 (0, 0, angle);
+        player = GetClosestVisiblePlayer();
+
+        if(player!=null){
+            seePlayer = true;
+            if(randomMovementOn){
+                CancelInvoke ("ChangeMovement");
+                InvokeRepeating("Fire", 0, fireRate);
+                randomMovementOn = false;
+            }
+
+            Vector2 direction = player.transform.position - transform.position;
+            if(direction.sqrMagnitude>5){
+                float angle = Vector2.SignedAngle(Vector2.up, direction);
+                transform.eulerAngles = new Vector3 (0, 0, angle);
+                rigidbody2D.velocity = transform.TransformDirection(Vector2.up);
+            }
+            else{
+                rigidbody2D.velocity = new Vector2(0,0);
+            }
+        }
+        else {
+            seePlayer = false;
+        }
+    
+        if(!seePlayer && !randomMovementOn){
+            InvokeRepeating("ChangeMovement", 0, 3);
+            CancelInvoke ("Fire");
+            randomMovementOn = true;
+        }
+
+        healthBar.transform.rotation = Quaternion.Euler (0, 0, 0);
+        healthBar.transform.position = transform.position + new Vector3 (0, 0.9f,0);
     }
     
     private void DestroyEnemy()
@@ -74,15 +123,13 @@ public class EnemyMovementMul : NetworkBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!NetworkManager.Singleton.IsServer || !NetworkObject.IsSpawned){return; }
+        if (!NetworkObject.IsSpawned || !NetworkManager.Singleton.IsServer 
+            || !other.gameObject.CompareTag("PlayerBullet")){return; }
 
-        if (other.gameObject.CompareTag("PlayerBullet"))
+        DecreaseHpServerRpc();
+        if (health.Value <= 0)
         {
-            DecreaseHpServerRpc();
-            if (health.Value <= 0)
-            {
-                DestroyEnemy();
-            }
+            DestroyEnemy();
         }
     }
 
@@ -108,12 +155,23 @@ public class EnemyMovementMul : NetworkBehaviour
     void DecreaseHpServerRpc()
     {
         health.Value -= 1;
+        DecreaseHpClientRpc(health.Value);
+    }
+
+    [ClientRpc]
+    void DecreaseHpClientRpc(int currentHealth)
+    {
+        int healthBarWidth=220;
+        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth*currentHealth)/maxHealth, 20);
+        byte maxByteValue=255;
+        byte green=(byte)((maxByteValue*currentHealth)/maxHealth);
+        healthBar.color=new Color32((byte)(maxByteValue-green),green,0,maxByteValue);
     }
     
     [ServerRpc]
     void SetHpServerRpc()
     {
-        health.Value = 3;
+        health.Value = maxHealth;
     }
 	
 	void ChangeMovement()
@@ -125,12 +183,11 @@ public class EnemyMovementMul : NetworkBehaviour
 	[ServerRpc]
 	void ChangeMovementServerRpc()
 	{		
-		Rigidbody2D rb = NetworkObject.GetComponent<Rigidbody2D>();
 		Vector3 v = new Vector3(random.Next((int) -range, (int) range) / range * scale,
         random.Next((int) -range, (int) range) / range * scale, 0);
     	v.Normalize();
 
-        rb.velocity = transform.TransformDirection(v);
-    	//rb.AddForce(v * 1, ForceMode2D.Impulse);
+        rigidbody2D.velocity = transform.TransformDirection(v);
+    	//rigidbody2D.AddForce(v * 1, ForceMode2D.Impulse);
 	}
 }

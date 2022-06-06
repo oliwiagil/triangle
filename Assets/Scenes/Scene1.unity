@@ -156,9 +156,9 @@ MonoBehaviour:
   PooledPrefabsList:
   - Prefab: {fileID: 100000, guid: 26e8740d898c8544b984097438d483c0, type: 3}
     PrewarmCount: 0
-  - Prefab: {fileID: 100000, guid: 230e1b98e390c4793978bcec20b9f3c1, type: 3}
+  - Prefab: {fileID: 100000, guid: 27285d37bf5903a41a915fa7f5e4c63b, type: 3}
     PrewarmCount: 0
-  - Prefab: {fileID: 4933005563524840836, guid: dd39defb290aa054d9947b9a64dc89c3, type: 3}
+  - Prefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
     PrewarmCount: 0
 --- !u!4 &371565334
 Transform:
@@ -199,7 +199,7 @@ AudioListener:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
-  m_Enabled: 1
+  m_Enabled: 0
 --- !u!20 &519420031
 Camera:
   m_ObjectHideFlags: 0
@@ -315,7 +315,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Texture: {fileID: 8400000, guid: 7c8598a1157ab7de2b65a1f78953d1f9, type: 2}
+  m_Texture: {fileID: 8400000, guid: f9c529cc8c2115e4fa00290f6abae96a, type: 2}
   m_UVRect:
     serializedVersion: 2
     x: 0
@@ -508,7 +508,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_ProtocolType: 0
   m_MaxPacketQueueSize: 128
-  m_MaxPayloadSize: 6144
+  m_MaxPayloadSize: 61440
   m_MaxSendQueueSize: 98304
   m_HeartbeatTimeoutMS: 500
   m_ConnectTimeoutMS: 1000
@@ -539,10 +539,10 @@ MonoBehaviour:
   NetworkConfig:
     ProtocolVersion: 0
     NetworkTransport: {fileID: 1303031861}
-    PlayerPrefab: {fileID: 100000, guid: 25417107c654a15449292bc000160265, type: 3}
+    PlayerPrefab: {fileID: 7922291516216300128, guid: 8ba5b095c606d7d4499cd76d9c58d669, type: 3}
     NetworkPrefabs:
     - Override: 0
-      Prefab: {fileID: 100000, guid: 25417107c654a15449292bc000160265, type: 3}
+      Prefab: {fileID: 7922291516216300128, guid: 8ba5b095c606d7d4499cd76d9c58d669, type: 3}
       SourcePrefabToOverride: {fileID: 0}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
@@ -552,12 +552,12 @@ MonoBehaviour:
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
     - Override: 0
-      Prefab: {fileID: 100000, guid: 230e1b98e390c4793978bcec20b9f3c1, type: 3}
+      Prefab: {fileID: 100000, guid: 27285d37bf5903a41a915fa7f5e4c63b, type: 3}
       SourcePrefabToOverride: {fileID: 0}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
     - Override: 0
-      Prefab: {fileID: 4933005563524840836, guid: dd39defb290aa054d9947b9a64dc89c3, type: 3}
+      Prefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
       SourcePrefabToOverride: {fileID: 0}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
@@ -698,14 +698,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 2027122270}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 22cd3f7191324189a9b7e42b7ca1106a, type: 3}
+  m_Script: {fileID: 11500000, guid: 10105bbf342efa64e8ca14646b7dc025, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnDelay: 1
-  spawnTime: 1
-  EnemyPrefab: {fileID: 4933005563524840836, guid: dd39defb290aa054d9947b9a64dc89c3, type: 3}
+  spawnDelay: 0
+  spawnTime: 0.2
+  EnemyPrefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
   initialServerSeed: 7312
-  ObstaclePrefab: {fileID: 5019422062460965281, guid: cd9020fc24e737ff89a03725bb444b42, type: 3}
+  ObstaclePrefab: {fileID: 5019422062460965281, guid: 9c9fbfacc89d740408bd73973755ef5b, type: 3}
   roomSize: 21
   doorSize: 5
   roomsInRow: 7
@@ -791,7 +791,7 @@ Camera:
     serializedVersion: 2
     m_Bits: 4294967295
   m_RenderingPath: -1
-  m_TargetTexture: {fileID: 8400000, guid: 7c8598a1157ab7de2b65a1f78953d1f9, type: 2}
+  m_TargetTexture: {fileID: 8400000, guid: f9c529cc8c2115e4fa00290f6abae96a, type: 2}
   m_TargetDisplay: 0
   m_TargetEye: 0
   m_HDR: 1
