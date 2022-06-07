@@ -8,12 +8,12 @@ using UnityEngine.Assertions;
 public class PlayerControlMul : NetworkBehaviour
 {
     static string s_ObjectPoolTag = "ObjectPool";
-
     NetworkObjectPool m_ObjectPool;
     public GameObject BulletPrefab;
 
     public Image healthBar;
     NetworkVariable<int> health = new NetworkVariable<int>();
+    NetworkVariable<int> myColor = new NetworkVariable<int>();
     private int maxHealth=25;
 
     public float speed = 5;
@@ -34,10 +34,13 @@ public class PlayerControlMul : NetworkBehaviour
         new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
 
     Rigidbody2D m_Rigidbody2D;
+    private SpriteRenderer m_Sprite;
 
+    private int[] colors ={0x228b22, 0x00008b,0xff8c00,0x00ff00,0x00ffff,0xff69b4, 0x3cb371,0xffdab9};
     void Awake()
     {
         m_Rigidbody2D = GetComponent<Rigidbody2D>();
+        m_Sprite = GetComponent<SpriteRenderer>();
         m_ObjectPool = GameObject.FindWithTag(s_ObjectPoolTag).GetComponent<NetworkObjectPool>();
         Assert.IsNotNull(m_ObjectPool,
             $"{nameof(NetworkObjectPool)} not found in scene. Did you apply the {s_ObjectPoolTag} to the GameObject?");
@@ -50,7 +53,22 @@ public class PlayerControlMul : NetworkBehaviour
         {
             SetNameServerRpc($"Player{OwnerClientId}");
             SetHpServerRpc();
+            var myColor = getColor(OwnerClientId);
+            m_Sprite.color = myColor;
+            m_Sprite.UpdateGIMaterials();
         }
+    }
+
+    private Color getColor(ulong Id)
+    {
+        int myId = (int) Id;
+        Color myColor = new Color();
+        myColor.b = (colors[myId % colors.Length] % 0x100) / 255f;
+        myColor.g = ((colors[myId % colors.Length] / 0x100) % 0x100) / 255f;
+        myColor.r = ((colors[myId % colors.Length] / 0x10000) % 0x100) / 255f;
+        myColor.a = 1;
+        Debug.Log(myId+" "+myColor+"");
+        return myColor;
     }
 
     void Update()
@@ -99,6 +117,7 @@ public class PlayerControlMul : NetworkBehaviour
         //rotation
         float angle = Vector2.SignedAngle(Vector2.up, m_Direction);
         m_Rigidbody2D.transform.eulerAngles = new Vector3(0, 0, angle);
+        
     }
 
     void UpdateClient()
@@ -147,9 +166,10 @@ public class PlayerControlMul : NetworkBehaviour
     public void FireServerRpc()
     {
         GameObject bullet = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
+        SpriteRenderer bulSpriteRenderer = bullet.GetComponent<SpriteRenderer>();
+        bulSpriteRenderer.color = getColor(OwnerClientId);
         bullet.transform.position = transform.position;
         bullet.transform.rotation = transform.rotation;
-    //    Debug.Log(transform.rotation);
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
         rb.AddForce(transform.up * bulletForce, ForceMode2D.Impulse);
         Physics2D.IgnoreCollision(bullet.GetComponent<Collider2D>(), GetComponent<Collider2D>());
@@ -185,10 +205,12 @@ public class PlayerControlMul : NetworkBehaviour
         {
             //TODO
             //GameOver
+            //or maybe just ResetLevel?
         }
         else
         {
             DecreaseHpServerRpc();
+            DecreaseHpBar(health.Value);
         }
     }
 
@@ -198,22 +220,29 @@ public class PlayerControlMul : NetworkBehaviour
         health.Value = maxHealth;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     void DecreaseHpServerRpc()
     {
         health.Value -= 1;
-        DecreaseHpClientRpc(health.Value);
+        //DecreaseHpClientRpc(health.Value);
     }
 
     [ClientRpc]
     void DecreaseHpClientRpc(int currentHealth)
+        // why is it even an rpc? why not just do it on local
+        //ALSO, client rpc is sent to ALL players so with no ownership check it decreases health of ALL players
     {
-        int healthBarWidth=220;
-        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth*currentHealth)/maxHealth, 20);
-        byte maxByteValue=255;
-        byte green=(byte)((maxByteValue*currentHealth)/maxHealth);
-        healthBar.color=new Color32((byte)(maxByteValue-green),green,0,maxByteValue);
+        DecreaseHpBar(currentHealth);
     }
 
-
+    private void DecreaseHpBar(int currentHealth)
+    {
+        if(currentHealth<0)
+            return;
+        int healthBarWidth = 220;
+        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth * currentHealth) / maxHealth, 20);
+        byte maxByteValue = 255;
+        byte green = (byte) ((maxByteValue * currentHealth) / maxHealth);
+        healthBar.color = new Color32((byte) (maxByteValue - green), green, 0, maxByteValue);
+    }
 }
