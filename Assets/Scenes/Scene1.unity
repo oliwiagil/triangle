@@ -702,7 +702,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnDelay: 0
-  spawnTime: 0.2
+  spawnTime: 3
   EnemyPrefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 9c9fbfacc89d740408bd73973755ef5b, type: 3}

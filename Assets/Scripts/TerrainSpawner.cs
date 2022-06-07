@@ -88,8 +88,6 @@ public class TerrainSpawner : NetworkBehaviour{
 			enemy_x = (int) enemyCords[0];
 			enemy_y = (int) enemyCords[1];	
 
-			Debug.Log(enemy_x);
-			Debug.Log(enemy_y);
 
 			GameObject enemy = m_ObjectPool.GetNetworkObject(EnemyPrefab, new Vector3(enemy_x, enemy_y,0), new Quaternion(0,0,0,0)).gameObject;
 			Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
@@ -256,13 +254,12 @@ public class TerrainSpawner : NetworkBehaviour{
         return coordinates;
     }
 
-    private void addObstacles(int x, int y)
+    private void addObstacles(int[,] coordinates)
     {
-        //translate map to real coordinates and refer to center of the obstacle, not its bottom-left corner
-        float xf = x + mapOffset;
-        float yf = y + mapOffset;
+        float xf = (coordinates[1,0]+coordinates[0,0])/2 + mapOffset;
+        float yf = (coordinates[1,1]+coordinates[0,1])/2 + mapOffset;
         GameObject obstacle = Instantiate(ObstaclePrefab, new Vector3(xf, yf), Quaternion.identity);
-        obstacle.gameObject.transform.localScale = new Vector3(1, 1);
+        obstacle.gameObject.transform.localScale = new Vector3((coordinates[1,0]-coordinates[0,0]+1), (coordinates[1,1]-coordinates[0,1]+1));
         obstacles.Add(obstacle);
     }
 
@@ -285,19 +282,26 @@ public class TerrainSpawner : NetworkBehaviour{
     {
         double count = 0;
         double all = 0;
+        double fixedCount = 0;
         for (int i = coordinates[0, 0]; i < coordinates[1, 0]; ++i) {
             for (int j = coordinates[0, 1]; j < coordinates[1, 1]; ++j)
             {
                 if (roomMap[i, j] == active)
                 {
-                    addObstacles(i,j);
-                    count += 1;
+                    int start = j;
+                    while (j < coordinates[1, 1] && roomMap[i, j] == active)
+                    {
+                        ++j;
+                        count += 1;
+                    }
+                    addObstacles(new int[,]{{i,start},{i,j-1}});
+                    fixedCount += 1;
                 }
 
                 all += 1;
             }
         }
-        //Debug.Log("Filled: "+(100*count/all)+"%");
+        //Debug.Log("Filled: "+(100*count/all)+"% with "+fixedCount+" blocks, instead of "+count+" : "+(1-fixedCount/count)+" efficiency");
     }
     private void setArea(int[,] coordinates,short v)
     { // add translation from map to real coordinates and create alternative "get coordinates"
