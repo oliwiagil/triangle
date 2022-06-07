@@ -38,6 +38,7 @@ public class TerrainSpawner : NetworkBehaviour{
     private const short wall = 3;
 
     private List<GameObject> obstacles=new List<GameObject>();
+    private int nextPlayerPosition=0;
 
     void Awake()
     {   
@@ -140,13 +141,12 @@ public class TerrainSpawner : NetworkBehaviour{
         if (!NetworkManager.Singleton.IsServer){ return; }
         Random localRand = new Random();
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        int x;
-        int y;
         foreach (GameObject target in players)
-        {
-            x = localRand.Next((int) -roomSize / 2, (int) roomSize / 2);
-            y = localRand.Next((int) -roomSize / 2, (int) roomSize / 2);
-            target.transform.position = new Vector3(x, y, 0);
+        {// a circle with radius=roomSize/4
+            nextPlayerPosition += 1;
+            double angle = nextPlayerPosition*(7f / 24f) * 180 / Math.PI;
+            Vector2 newPosition = new Vector2((float) Math.Cos(angle)*roomSize/4, (float) Math.Sin(angle)*roomSize/4);
+            target.transform.position = newPosition;
         }
     }
 

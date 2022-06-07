@@ -20,7 +20,9 @@ public class RandomPositionPlayerSpawner: MonoBehaviour
         
       //m_RoundRobinIndex = (m_RoundRobinIndex + 1) % m_SpawnPositions.Count;
       //return m_SpawnPositions[m_RoundRobinIndex];
-        return Vector3.zero;
+            double angle = m_RoundRobinIndex*(7f / 24f) * 180 / Math.PI;
+            Vector2 newPosition = new Vector2((float) Math.Cos(angle)*3, (float) Math.Sin(angle)*3);
+            return newPosition;
     }
     
     private void Awake()
