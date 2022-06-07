@@ -44,28 +44,61 @@ public class TerrainSpawner : NetworkBehaviour{
         initRandom = new Random(initialServerSeed);
         m_ObjectPool = GameObject.FindWithTag("ObjectPool").GetComponent<NetworkObjectPool>();
     }
+	
+	private Vector3 enemycords(Vector3 playerCords){
+		int x,y;
+		Random localRand = new Random();
+		x = localRand.Next((int) -(roomSize), (int) (roomSize)) + (int) playerCords[0];
+		y = localRand.Next((int) -(roomSize), (int) (roomSize)) + (int) playerCords[1];
+		return new Vector3(x,y,0);
+	}
+	
+	private bool cordTest(Vector3 enemyCords, Vector3 playerCords) {
+		if( Math.Abs(enemyCords[0] - playerCords[0]) < roomSize / 2 && Math.Abs(enemyCords[1] - playerCords[1]) < roomSize / 2)
+			return true;
+		int shiftedEnemyX = (int) enemyCords[0] - mapOffset;
+		int shiftedEnemyY = (int) enemyCords[1] - mapOffset;
+		
+		if(shiftedEnemyX < 0 || shiftedEnemyX > (mapSize - 1) || shiftedEnemyY < 0 || shiftedEnemyY > (mapSize - 1) )
+			return true; 
+		
+		if(roomMap[shiftedEnemyX, shiftedEnemyY] == active || roomMap[shiftedEnemyX, shiftedEnemyY] == wall)
+			return true;
+
+		return false;
+	}
+
     void addEnemyServer()
     {
         if (!NetworkManager.Singleton.IsServer){ return; }
 
         Random localRand = new Random();
-        int x = localRand.Next(0, (int) mapSize);
-        int y = localRand.Next(0, (int) mapSize);
-        while (roomMap[x, y] == active || roomMap[x, y] == wall)
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+		int enemy_x;
+		int enemy_y;
+        foreach (GameObject target in players)
         {
-            x = localRand.Next(0, (int) mapSize);
-            y = localRand.Next(0, (int) mapSize);
+			Vector3 playerCords = target.transform.position;
+			Vector3 enemyCords = enemycords(playerCords);
+
+            while (cordTest(enemyCords, playerCords))
+       		{
+            	enemyCords = enemycords(playerCords);
+        	}
+			enemy_x = (int) enemyCords[0];
+			enemy_y = (int) enemyCords[1];	
+
+			Debug.Log(enemy_x);
+			Debug.Log(enemy_y);
+
+			GameObject enemy = m_ObjectPool.GetNetworkObject(EnemyPrefab, new Vector3(enemy_x, enemy_y,0), new Quaternion(0,0,0,0)).gameObject;
+			Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
+        	Vector3 v = new Vector3(localRand.Next((int) -range, (int) range) / range * scale,
+            	localRand.Next((int) -range, (int) range) / range * scale, 0);
+        	v.Normalize();
+        	rb.AddForce(v * 1, ForceMode2D.Impulse);
+			enemy.GetComponent<NetworkObject>().Spawn(true);
         }
-        GameObject enemy = m_ObjectPool.GetNetworkObject(EnemyPrefab,
-            new Vector3(x + mapOffset,y + mapOffset ,0), new Quaternion(0,0,0,0)).gameObject;
-        
-        Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
-        Vector3 v = new Vector3(localRand.Next((int) -range, (int) range) / range * scale,
-            localRand.Next((int) -range, (int) range) / range * scale, 0);
-        v.Normalize();
-        rb.AddForce(v * 1, ForceMode2D.Impulse);
-    
-        enemy.GetComponent<NetworkObject>().Spawn(true);
     }
     public void onSeedChange(int newSeed)
     {
