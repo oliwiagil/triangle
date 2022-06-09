@@ -22,6 +22,7 @@ public class TerrainSpawner : NetworkBehaviour{
     public float wallProbability=0.75f;
     private Random random=null;
     private Random initRandom;
+	private int MaxNumberOfEnemies = 15;
     private short[,] roomMap;
     private static readonly int[,] cross = new int[,] {{0, 1}, {0, -1}, {1, 0}, {-1, 0}};
     private int testing = 0;
@@ -75,10 +76,19 @@ public class TerrainSpawner : NetworkBehaviour{
 
         Random localRand = new Random();
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+		GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
 		int enemy_x;
 		int enemy_y;
         foreach (GameObject target in players)
         {
+			enemies = GameObject.FindGameObjectsWithTag("Enemy");
+			//Debug.Log(enemies.Length);
+			
+			//each spawn increases enemies length by 2
+			if(enemies.Length >= 2 * MaxNumberOfEnemies){
+				break;
+			}
+
 			Vector3 playerCords = target.transform.position;
 			Vector3 enemyCords = enemycords(playerCords);
 
@@ -89,6 +99,8 @@ public class TerrainSpawner : NetworkBehaviour{
 			enemy_x = (int) enemyCords[0];
 			enemy_y = (int) enemyCords[1];	
 
+			//Debug.Log(enemy_x);
+			//Debug.Log(enemy_y);
 
 			GameObject enemy = m_ObjectPool.GetNetworkObject(EnemyPrefab, new Vector3(enemy_x, enemy_y,0), new Quaternion(0,0,0,0)).gameObject;
 			Rigidbody2D rb = enemy.GetComponent<Rigidbody2D>();
@@ -130,6 +142,7 @@ public class TerrainSpawner : NetworkBehaviour{
         onSeedChange(newSeed);
         recieveSeedClientRPC(newSeed);
         movePlayersToSpawnRoom();
+		destroyEnemies();
         //Debug.Log("player called");
         //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
         //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
@@ -149,7 +162,17 @@ public class TerrainSpawner : NetworkBehaviour{
             target.transform.position = newPosition;
         }
     }
-
+	
+	private void destroyEnemies()
+	{
+		if(!NetworkManager.Singleton.IsServer){ return;}
+		GameObject[] enemies = GameObject.FindGameObjectsWithTag("Enemy");
+		foreach(GameObject enemy in enemies)
+		{
+			Destroy(enemy);
+		}
+	}
+	
     void refreshObstacles(string keyBind)
     {
             if (Input.GetKey(keyBind))
@@ -632,8 +655,6 @@ public class TerrainSpawner : NetworkBehaviour{
 -------------------------
 |   ||   ||   ||   ||   |
 -------------------------
-<-- TODO
--- spawn enemies in room with a player (or adjacent)
     TODO --> add objectives
 - k collectibles (up to 1 per room) for k players to be returned to starting room (in outer most ring of rooms) 
 - each player collects ONE
