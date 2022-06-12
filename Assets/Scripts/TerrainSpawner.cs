@@ -122,7 +122,6 @@ public class TerrainSpawner : NetworkBehaviour{
         random = new Random(seed);
         destroyObstacles();
         addObstacles();
-		addBoxes();
     }
 
 	private void addBoxes()
@@ -160,6 +159,7 @@ public class TerrainSpawner : NetworkBehaviour{
             
 			Debug.Log(box_x + " box_x " + box_y + " box_y");
 			GameObject box = m_ObjectPool.GetNetworkObject(BoxPrefabMul, new Vector3(box_x + mapOffset, box_y + mapOffset, 0), new Quaternion(0,0,0,0)).gameObject;
+            box.GetComponent<BoxControlMul>().color.Value= clientId;
             box.GetComponent<NetworkObject>().Spawn(true);
 		}
 	}
@@ -168,13 +168,13 @@ public class TerrainSpawner : NetworkBehaviour{
     [ClientRpc]
     void recieveSeedClientRPC(int newSeed)
     {
-        //Debug.Log("Server called");
+        Debug.Log("Server called"+OwnerClientId+" "+newSeed);
         onSeedChange(newSeed);
     }
     [ServerRpc(RequireOwnership = false)]
     public void requestSendSeedServerRPC()
     {
-        //Debug.Log("player asked");
+        Debug.Log("player asked");
         recieveSeedClientRPC(seed);
     }
     [ServerRpc(RequireOwnership = false)]
@@ -188,6 +188,7 @@ public class TerrainSpawner : NetworkBehaviour{
         onSeedChange(newSeed);
         recieveSeedClientRPC(newSeed);
         movePlayersToSpawnRoom();
+		addBoxes();
         //Debug.Log("player called");
         //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
         //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
@@ -248,12 +249,13 @@ public class TerrainSpawner : NetworkBehaviour{
             refreshObstacles("n");
 			
 			// restarting after new players join
+            /*
 			int players = NetworkManager.Singleton.ConnectedClients.Count;
 			if(currentPlayers != players)
 			{
 				currentPlayers = players;
                 requestSendNewSeedServerRPC();
-			}
+			}*/
         }
         if (NetworkManager.Singleton.IsConnectedClient)
         {
