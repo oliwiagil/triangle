@@ -6,10 +6,12 @@ using Random = System.Random;
 
 public class TerrainSpawner : NetworkBehaviour{
     private GameObject enemy;
+	private GameObject box;
     public float spawnDelay;
     public float spawnTime;
     NetworkObjectPool m_ObjectPool;
     public GameObject EnemyPrefab;
+	public GameObject BoxPrefabMul;
     private float scale = 10f;
     private float range = 256;
     public int initialServerSeed=7312;
@@ -119,7 +121,44 @@ public class TerrainSpawner : NetworkBehaviour{
         random = new Random(seed);
         destroyObstacles();
         addObstacles();
+		addBoxes();
     }
+
+	private void addBoxes()
+	{
+		Random localRand = new Random();
+		GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+		foreach (GameObject target in players)
+        {
+			//Debug.Log(target.GetInstanceID());
+			int room_x = localRand.Next(0, roomsInRow);
+			int room_y = localRand.Next(0, roomsInRow);
+
+			int whichWall = localRand.Next(1,4);
+			if(whichWall == 1) {
+				room_y = 0;
+			}else if(whichWall == 2) {
+				room_x = 0;
+			}else if(whichWall == 3) {
+				room_y = roomsInRow - 1;
+			}else if(whichWall == 4) {
+				room_x = roomsInRow - 1;
+			}
+
+			int [,] cords = getRoomMapCoordinates(room_x, room_y);
+			int box_x = localRand.Next(cords[0,0], cords[1,0] + 1);	
+			int box_y = localRand.Next(cords[0,1], cords[1,1] + 1);	
+            while ( !(roomMap[box_x, box_y] == inactive))
+       		{
+				box_x = localRand.Next(cords[0,0], cords[1,0] + 1);	
+            	box_y = localRand.Next(cords[0,1], cords[1,1] + 1);	
+        	}
+			Debug.Log(box_x + " box_x " + box_y + " box_y");
+			GameObject box = m_ObjectPool.GetNetworkObject(BoxPrefabMul, new Vector3(box_x + mapOffset, box_y + mapOffset, 0), new Quaternion(0,0,0,0)).gameObject;
+			box.GetComponent<NetworkObject>().Spawn(true);
+		}
+	}
+	
 
     [ClientRpc]
     void recieveSeedClientRPC(int newSeed)
@@ -139,10 +178,11 @@ public class TerrainSpawner : NetworkBehaviour{
     
         //if (!NetworkManager.Singleton.IsServer){ return; }
         int newSeed = Math.Abs(initRandom.Next());
+		destroyEnemies();
+		destroyBoxes();
         onSeedChange(newSeed);
         recieveSeedClientRPC(newSeed);
         movePlayersToSpawnRoom();
-		destroyEnemies();
         //Debug.Log("player called");
         //if server is a host it will send to itself, but will ignore, as onSeedChange already processed seed
         //it is a workaround for weird race conditions when client asks for new seed, as server refreshes its obstacles
@@ -172,7 +212,17 @@ public class TerrainSpawner : NetworkBehaviour{
 			Destroy(enemy);
 		}
 	}
-	
+
+	private void destroyBoxes()
+	{
+		if(!NetworkManager.Singleton.IsServer){ return;}
+		GameObject[] boxes = GameObject.FindGameObjectsWithTag("Box");
+		foreach(GameObject target in boxes)
+		{
+			Destroy(target);
+		}
+	}	
+
     void refreshObstacles(string keyBind)
     {
             if (Input.GetKey(keyBind))
