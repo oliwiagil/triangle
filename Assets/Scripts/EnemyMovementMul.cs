@@ -44,6 +44,7 @@ public class EnemyMovementMul : NetworkBehaviour
         }
 
 		InvokeRepeating("ChangeMovement", 0, 3);
+        DecreaseHpClientRpc(maxHealth);
     }
 
     public GameObject GetClosestVisiblePlayer()
@@ -118,6 +119,7 @@ public class EnemyMovementMul : NetworkBehaviour
         
         //stupid but works 
         SetHpServerRpc();
+        DecreaseHpClientRpc(health.Value);
         NetworkObject.Despawn();
     }
 
@@ -161,8 +163,8 @@ public class EnemyMovementMul : NetworkBehaviour
     [ClientRpc]
     void DecreaseHpClientRpc(int currentHealth)
     {
-        int healthBarWidth=220;
-        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth*currentHealth)/maxHealth, 20);
+        int healthBarWidth=110;
+        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth*currentHealth)/maxHealth, 10);
         byte maxByteValue=255;
         byte green=(byte)((maxByteValue*currentHealth)/maxHealth);
         healthBar.color=new Color32((byte)(maxByteValue-green),green,0,maxByteValue);

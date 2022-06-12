@@ -32,6 +32,7 @@ public class TerrainSpawner : NetworkBehaviour{
     //max is roomSize*roomsInRow+1*(roomsInRow+1)+2 = (rooms + walls + outer margin)
     private int mapSize;
     private int mapOffset;
+	private int currentPlayers = 0;
 
     //for translation from map coordinates to real coordinates
     //cell state
@@ -256,6 +257,13 @@ public class TerrainSpawner : NetworkBehaviour{
                 requestSendNewSeedServerRPC();
             }
             refreshObstacles("n");
+			
+			// restarting after new players join
+			int players = NetworkManager.Singleton.ConnectedClients.Count;
+			if(currentPlayers != players)
+			{
+				currentPlayers = players;
+			}
         }
         if (NetworkManager.Singleton.IsConnectedClient)
         {
