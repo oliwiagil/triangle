@@ -709,7 +709,7 @@ MonoBehaviour:
   BoxPrefabMul: {fileID: 95554961437044780, guid: f582a99f77d7af138b7312039e9ff710, type: 3}
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 9c9fbfacc89d740408bd73973755ef5b, type: 3}
-  roomSize: 21
+  roomSize: 19
   doorSize: 5
   roomsInRow: 7
   obstacleProbability: 0.56

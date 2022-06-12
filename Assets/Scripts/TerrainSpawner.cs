@@ -135,34 +135,45 @@ public class TerrainSpawner : NetworkBehaviour{
 		foreach (ulong clientId in NetworkManager.Singleton.ConnectedClients.Keys)
         {
 			//Debug.Log(target.GetInstanceID());
-			int room_x = localRand.Next(0, roomsInRow);
-			int room_y = localRand.Next(0, roomsInRow);
+            for (int k = 0; k <= level; ++k)
+            {
+                int room_x = localRand.Next(0, roomsInRow);
+                int room_y = localRand.Next(0, roomsInRow);
 
-			int whichWall = localRand.Next(1,4);
-			if(whichWall == 1) {
-				room_y = 0;
-			}else if(whichWall == 2) {
-				room_x = 0;
-			}else if(whichWall == 3) {
-				room_y = roomsInRow - 1;
-			}else if(whichWall == 4) {
-				room_x = roomsInRow - 1;
-			}
+                int whichWall = localRand.Next(1, 4);
+                if (whichWall == 1)
+                {
+                    room_y = 0;
+                }
+                else if (whichWall == 2)
+                {
+                    room_x = 0;
+                }
+                else if (whichWall == 3)
+                {
+                    room_y = roomsInRow - 1;
+                }
+                else if (whichWall == 4)
+                {
+                    room_x = roomsInRow - 1;
+                }
 
-			int [,] cords = getRoomMapCoordinates(room_x, room_y);
-			int box_x = localRand.Next(cords[0,0], cords[1,0] + 1);	
-			int box_y = localRand.Next(cords[0,1], cords[1,1] + 1);	
-            while ( !(roomMap[box_x, box_y] == inactive))
-       		{
-				box_x = localRand.Next(cords[0,0], cords[1,0] + 1);	
-            	box_y = localRand.Next(cords[0,1], cords[1,1] + 1);	
-        	}
-            
-			Debug.Log(box_x + " box_x " + box_y + " box_y");
-			GameObject box = m_ObjectPool.GetNetworkObject(BoxPrefabMul, new Vector3(box_x + mapOffset, box_y + mapOffset, 0), new Quaternion(0,0,0,0)).gameObject;
-            box.GetComponent<BoxControlMul>().color.Value= clientId;
-            box.GetComponent<NetworkObject>().Spawn(true);
-		}
+                int[,] cords = getRoomMapCoordinates(room_x, room_y);
+                int box_x = localRand.Next(cords[0, 0], cords[1, 0] + 1);
+                int box_y = localRand.Next(cords[0, 1], cords[1, 1] + 1);
+                while (!(roomMap[box_x, box_y] == inactive))
+                {
+                    box_x = localRand.Next(cords[0, 0], cords[1, 0] + 1);
+                    box_y = localRand.Next(cords[0, 1], cords[1, 1] + 1);
+                }
+
+                Debug.Log(box_x + " box_x " + box_y + " box_y");
+                GameObject box = m_ObjectPool.GetNetworkObject(BoxPrefabMul,
+                    new Vector3(box_x + mapOffset, box_y + mapOffset, 0), new Quaternion(0, 0, 0, 0)).gameObject;
+                box.GetComponent<BoxControlMul>().color.Value = clientId;
+                box.GetComponent<NetworkObject>().Spawn(true);
+            }
+        }
 	}
 	
 
@@ -354,10 +365,10 @@ public class TerrainSpawner : NetworkBehaviour{
 
     private void addObstacles(int[,] coordinates)
     {
-        float xf = (coordinates[1,0]+coordinates[0,0])/2 + mapOffset;
-        float yf = (coordinates[1,1]+coordinates[0,1])/2 + mapOffset;
+        float xf = coordinates[1,0] + mapOffset;
+        float yf = (coordinates[1,1]+coordinates[0,1])/2f + mapOffset;
         GameObject obstacle = Instantiate(ObstaclePrefab, new Vector3(xf, yf), Quaternion.identity);
-        obstacle.gameObject.transform.localScale = new Vector3((coordinates[1,0]-coordinates[0,0]+1), (coordinates[1,1]-coordinates[0,1]+1));
+        obstacle.gameObject.transform.localScale = new Vector3(1, (coordinates[1,1]-coordinates[0,1]+1));
         obstacles.Add(obstacle);
     }
 
@@ -392,7 +403,8 @@ public class TerrainSpawner : NetworkBehaviour{
                         ++j;
                         count += 1;
                     }
-                    addObstacles(new int[,]{{i,start},{i,j-1}});
+                    --j;
+                    addObstacles(new int[,]{{i,start},{i,j}});
                     fixedCount += 1;
                 }
 
