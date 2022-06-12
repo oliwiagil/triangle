@@ -141,7 +141,9 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   BulletPrefab: {fileID: 100000, guid: 26e8740d898c8544b984097438d483c0, type: 3}
   healthBar: {fileID: 2937644049448163384}
-  speed: 5
+  PlayerColor:
+    m_InternalValue: 0
+  speed: 15
   fireRate: 0.25
   bulletForce: 8
   PlayerName:
