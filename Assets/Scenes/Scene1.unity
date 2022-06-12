@@ -711,8 +711,8 @@ MonoBehaviour:
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 9c9fbfacc89d740408bd73973755ef5b, type: 3}
   roomSize: 21
   doorSize: 5
-  roomsInRow: 3
-  obstacleProbability: 0.2
+  roomsInRow: 7
+  obstacleProbability: 0.56
   wallProbability: 0.75
 --- !u!4 &2027122272
 Transform:
