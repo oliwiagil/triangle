@@ -42,6 +42,7 @@ public class TerrainSpawner : NetworkBehaviour{
 
     private List<GameObject> obstacles=new List<GameObject>();
     private int nextPlayerPosition=0;
+    private int[] colors ={0x228b22, 0xff8c00,0x00ff00,0x00ffff,0xff69b4,0xffdab9};
 
     void Awake()
     {   
@@ -124,8 +125,19 @@ public class TerrainSpawner : NetworkBehaviour{
 		addBoxes();
     }
 
+    public Color getColor(int myId)
+    {
+        Color myColor = new Color();
+        myColor.b = (colors[myId % colors.Length] % 0x100) / 255f;
+        myColor.g = ((colors[myId % colors.Length] / 0x100) % 0x100) / 255f;
+        myColor.r = ((colors[myId % colors.Length] / 0x10000) % 0x100) / 255f;
+        myColor.a = 1;
+        return myColor;
+    }
 	private void addBoxes()
 	{
+        if(!NetworkManager.Singleton.IsServer)
+            return;
 		Random localRand = new Random();
 		GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
 		foreach (GameObject target in players)
@@ -155,7 +167,8 @@ public class TerrainSpawner : NetworkBehaviour{
         	}
 			Debug.Log(box_x + " box_x " + box_y + " box_y");
 			GameObject box = m_ObjectPool.GetNetworkObject(BoxPrefabMul, new Vector3(box_x + mapOffset, box_y + mapOffset, 0), new Quaternion(0,0,0,0)).gameObject;
-			box.GetComponent<NetworkObject>().Spawn(true);
+            box.GetComponent<BoxControlMul>().color.Value= getColor((int) OwnerClientId);
+            box.GetComponent<NetworkObject>().Spawn(true);
 		}
 	}
 	

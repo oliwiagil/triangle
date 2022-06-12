@@ -86,7 +86,7 @@ public class PlayerControlMul : NetworkBehaviour
     }
 
 
-    private Color getColor(int myId)
+    public Color getColor(int myId)
     {
         Color myColor = new Color();
         myColor.b = (colors[myId % colors.Length] % 0x100) / 255f;
