@@ -252,6 +252,7 @@ public class TerrainSpawner : NetworkBehaviour{
 			if(currentPlayers != players)
 			{
 				currentPlayers = players;
+                requestSendNewSeedServerRPC();
 			}
         }
         if (NetworkManager.Singleton.IsConnectedClient)
