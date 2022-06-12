@@ -33,6 +33,7 @@ public class TerrainSpawner : NetworkBehaviour{
     private int mapSize;
     private int mapOffset;
 	private int currentPlayers = 0;
+	private int level = 0;
 
     //for translation from map coordinates to real coordinates
     //cell state
@@ -233,6 +234,7 @@ public class TerrainSpawner : NetworkBehaviour{
     {
             if (Input.GetKey(keyBind))
             {
+				level = 0;
                 requestSendNewSeedServerRPC();
             }
     }
@@ -247,15 +249,24 @@ public class TerrainSpawner : NetworkBehaviour{
                 requestSendNewSeedServerRPC();
             }
             refreshObstacles("n");
-			
-			// restarting after new players join
-            /*
+		
 			int players = NetworkManager.Singleton.ConnectedClients.Count;
 			if(currentPlayers != players)
 			{
 				currentPlayers = players;
-                requestSendNewSeedServerRPC();
-			}*/
+				MaxNumberOfEnemies = 15 * currentPlayers + 10 * level;
+				//requestSendNewSeedServerRPC();
+			}
+
+			//Debug.Log(level);
+			GameObject[] boxes = GameObject.FindGameObjectsWithTag("Box");
+			if(boxes.Length == 0)
+			{
+				level += 1;
+				MaxNumberOfEnemies = 15 * currentPlayers + 10 * level;
+				requestSendNewSeedServerRPC();
+			}
+			
         }
         if (NetworkManager.Singleton.IsConnectedClient)
         {
