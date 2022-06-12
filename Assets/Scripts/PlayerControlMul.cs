@@ -12,11 +12,9 @@ public class PlayerControlMul : NetworkBehaviour
     public GameObject BulletPrefab;
 
     public Image healthBar;
-    NetworkVariable<int> PlayerHealth = new NetworkVariable<int>();
-    [SerializeField]
-    NetworkVariable<int> PlayerColor = new NetworkVariable<int>();
-    private int maxHealth=25;
-    
+    NetworkVariable<int> health = new NetworkVariable<int>();
+    NetworkVariable<int> myColor = new NetworkVariable<int>();
+    private int maxHealth=5;
 
     public float speed = 5;
 
@@ -30,16 +28,15 @@ public class PlayerControlMul : NetworkBehaviour
     private float nextFire = 0;
     public float fireRate = 0.25f;
     public float bulletForce = 8;
-    private int global_numering=0;
 
     [SerializeField]
     public NetworkVariable<FixedString32Bytes> PlayerName =
-    new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
+        new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
 
     Rigidbody2D m_Rigidbody2D;
     private SpriteRenderer m_Sprite;
 
-    private int[] colors ={0x228b22, 0xff8c00,0x00ff00,0x00ffff,0xff69b4,0xffdab9};
+    private int[] colors ={0x228b22, 0x00008b,0xff8c00,0x00ff00,0x00ffff,0xff69b4, 0x3cb371,0xffdab9};
     void Awake()
     {
         m_Rigidbody2D = GetComponent<Rigidbody2D>();
@@ -49,26 +46,6 @@ public class PlayerControlMul : NetworkBehaviour
             $"{nameof(NetworkObjectPool)} not found in scene. Did you apply the {s_ObjectPoolTag} to the GameObject?");
     }
 
-    void onColorChange(int oldCol, int newCol)
-    {
-        setSpriteColor(newCol);
-    }
-
-    private void setSpriteColor(int newCol)
-    {
-        m_Sprite.color=getColor(newCol);
-        m_Sprite.UpdateGIMaterials();
-    }
-
-    private void OnEnable()
-    {
-            PlayerColor.OnValueChanged += onColorChange;
-    }
-    private void OnDisable()
-    {
-            PlayerColor.OnValueChanged -= onColorChange;
-    }
-
     void Start()
     {
         DontDestroyOnLoad(gameObject);
@@ -76,23 +53,21 @@ public class PlayerControlMul : NetworkBehaviour
         {
             SetNameServerRpc($"Player{OwnerClientId}");
             SetHpServerRpc();
-            //SetColorServerRpc((int)OwnerClientId);
-            /*
-            var myColor = getColor(this.myColor.Value);
+            var myColor = getColor(OwnerClientId);
             m_Sprite.color = myColor;
             m_Sprite.UpdateGIMaterials();
-            */
         }
     }
 
-
-    public Color getColor(int myId)
+    public Color getColor(ulong Id)
     {
+        int myId = (int) Id;
         Color myColor = new Color();
         myColor.b = (colors[myId % colors.Length] % 0x100) / 255f;
         myColor.g = ((colors[myId % colors.Length] / 0x100) % 0x100) / 255f;
         myColor.r = ((colors[myId % colors.Length] / 0x10000) % 0x100) / 255f;
         myColor.a = 1;
+        Debug.Log(myId+" "+myColor+"");
         return myColor;
     }
 
@@ -175,8 +150,6 @@ public class PlayerControlMul : NetworkBehaviour
             nextFire = Time.time + fireRate;
             FireServerRpc();
         }
-        SetColorServerRpc((int)OwnerClientId);
-        setSpriteColor((int)OwnerClientId);
     }
 
 
@@ -193,6 +166,8 @@ public class PlayerControlMul : NetworkBehaviour
     public void FireServerRpc()
     {
         GameObject bullet = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
+        SpriteRenderer bulSpriteRenderer = bullet.GetComponent<SpriteRenderer>();
+        bulSpriteRenderer.color = getColor(OwnerClientId);
         bullet.transform.position = transform.position;
         bullet.transform.rotation = transform.rotation;
         Rigidbody2D rb = bullet.GetComponent<Rigidbody2D>();
@@ -219,11 +194,6 @@ public class PlayerControlMul : NetworkBehaviour
     {
         PlayerName.Value = name;
     }
-    [ServerRpc]
-    public void SetColorServerRpc(int Id)
-    {
-        PlayerColor.Value = Id;
-    }
 
 
     void OnTriggerEnter2D(Collider2D other)
@@ -231,34 +201,36 @@ public class PlayerControlMul : NetworkBehaviour
         if (!NetworkObject.IsSpawned || !NetworkManager.Singleton.IsServer 
             || !other.gameObject.CompareTag("EnemyBullet")){return; }
 
-        if (PlayerHealth.Value <= 0)
+        if (health.Value <= 1)
         {
-            //TODO
-            //GameOver
-            //or maybe just ResetLevel?
+            transform.position = new Vector3(0, 0, 0);
+			SetHpServerRpc();
+			DecreaseHpBar(health.Value);
         }
         else
         {
             DecreaseHpServerRpc();
-            DecreaseHpBar(PlayerHealth.Value);
+            DecreaseHpBar(health.Value);
         }
     }
 
     [ServerRpc]
     void SetHpServerRpc()
     {
-        PlayerHealth.Value = maxHealth;
+        health.Value = maxHealth;
     }
 
-    [ServerRpc(RequireOwnership = false)]
+    [ServerRpc]
     void DecreaseHpServerRpc()
     {
-        PlayerHealth.Value -= 1;
-        DecreaseHpClientRpc(PlayerHealth.Value);
+        health.Value -= 1;
+        //DecreaseHpClientRpc(health.Value);
     }
 
     [ClientRpc]
-    void DecreaseHpClientRpc(int currentHealth) // I am sorry, it seems to work fine regardless of my beliefs
+    void DecreaseHpClientRpc(int currentHealth)
+        // why is it even an rpc? why not just do it on local
+        //ALSO, client rpc is sent to ALL players so with no ownership check it decreases health of ALL players
     {
         DecreaseHpBar(currentHealth);
     }
