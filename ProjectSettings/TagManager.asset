@@ -9,6 +9,8 @@ TagManager:
   - Barier
   - EnemyBullet
   - PlayerBullet
+  - Bullet
+  - Box
   layers:
   - Default
   - TransparentFX
