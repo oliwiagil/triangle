@@ -34,6 +34,8 @@ public class PlayerControlMul : NetworkBehaviour
     public NetworkVariable<FixedString32Bytes> PlayerName =
         new NetworkVariable<FixedString32Bytes>(new FixedString32Bytes(""));
 
+    [SerializeField] public NetworkVariable<ulong> playerId = new NetworkVariable<ulong>();
+
     Rigidbody2D m_Rigidbody2D;
     private SpriteRenderer m_Sprite;
 
@@ -74,7 +76,14 @@ public class PlayerControlMul : NetworkBehaviour
         {
             SetNameServerRpc($"Player{OwnerClientId}");
             SetHpServerRpc();
+            SetPlayerIdServerRpc(OwnerClientId);
         }
+    }
+
+    [ServerRpc]
+    public void SetPlayerIdServerRpc(ulong myId)
+    {
+        playerId.Value = myId;
     }
 
     public Color getColor(int myId)
