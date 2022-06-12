@@ -140,7 +140,8 @@ public class TerrainSpawner : NetworkBehaviour{
             return;
 		Random localRand = new Random();
 		GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-		foreach (GameObject target in players)
+        
+		foreach (ulong clientId in NetworkManager.Singleton.ConnectedClients.Keys)
         {
 			//Debug.Log(target.GetInstanceID());
 			int room_x = localRand.Next(0, roomsInRow);
@@ -165,9 +166,10 @@ public class TerrainSpawner : NetworkBehaviour{
 				box_x = localRand.Next(cords[0,0], cords[1,0] + 1);	
             	box_y = localRand.Next(cords[0,1], cords[1,1] + 1);	
         	}
+            
 			Debug.Log(box_x + " box_x " + box_y + " box_y");
 			GameObject box = m_ObjectPool.GetNetworkObject(BoxPrefabMul, new Vector3(box_x + mapOffset, box_y + mapOffset, 0), new Quaternion(0,0,0,0)).gameObject;
-            box.GetComponent<BoxControlMul>().color.Value= getColor((int) OwnerClientId);
+            box.GetComponent<BoxControlMul>().color.Value= getColor((int)clientId);
             box.GetComponent<NetworkObject>().Spawn(true);
 		}
 	}
