@@ -5,7 +5,7 @@ using UnityEngine;
 public class BoxControlMul : NetworkBehaviour
 {
 
-    private int[] colors ={0x228b22, 0xff8c00,0x00ff00,0x00ffff,0xff69b4,0xffdab9};
+    private int[] colors ={0x228b22, 0xff8c00,0x00ffff,0xff69b4,0xffdab9,0x00ff00};
     public Color getColor(ulong Id)
     {
         int myId = (int) Id;
