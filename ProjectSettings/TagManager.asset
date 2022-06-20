@@ -11,6 +11,7 @@ TagManager:
   - PlayerBullet
   - Bullet
   - Box
+  - Boss
   layers:
   - Default
   - TransparentFX
