@@ -19,7 +19,8 @@ public class BossControl : NetworkBehaviour
     public float fireRate = 3;
 
     private NetworkVariable<int> health = new NetworkVariable<int>();
-    private int maxHealth = 20;
+    private NetworkVariable<int> maxHealth = new NetworkVariable<int>();
+    private NetworkVariable<int> level = new NetworkVariable<int>();
 
     private Random random;
     private float scale = 10f;
@@ -29,6 +30,17 @@ public class BossControl : NetworkBehaviour
     private bool randomMovementOn = true;
 
     private Rigidbody2D rigidbody2D;
+
+    float customScale(int level)
+    {
+        double lvl = (double) level;
+        return (float)(1f - 1f / (1 + Math.Pow(Math.E, (-(lvl / 0.8f - 2.5f)))));
+    }
+
+    int adjustedMaxHealth()
+    {
+        return 5 * NetworkManager.ConnectedClients.Count + 15 * level.Value + 5;
+    }
 
     void Awake()
     {
@@ -41,13 +53,36 @@ public class BossControl : NetworkBehaviour
     {
         if (NetworkManager.Singleton.IsServer)
         {
-            SetHpServerRpc();
+            SetHpServerRpc(0,true);
+            SetLevelServerRPC(true);
         }
 		GameObject[] boss = GameObject.FindGameObjectsWithTag("Boss");
 		boss[0].SetActive(true);
         InvokeRepeating("ChangeMovement", 0, 10);
-        DecreaseHpClientRpc(maxHealth);
+        DecreaseHpClientRpc(maxHealth.Value);
     }
+
+    [ServerRpc]
+    private void SetLevelServerRPC(bool first=false)
+    {
+        if (first)
+        {
+            level.Value = 0;
+        }
+        else
+        {
+            level.Value += 1;
+        }
+        
+    }
+
+    /*
+    [ServerRpc(RequireOwnership = false)]
+    public void HealBossServerRPC()
+    {
+        health.Value = Math.Min((int)(health.Value * 1.1f), maxHealth.Value);
+    }
+    */
 
     public GameObject GetClosestVisiblePlayer()
     {
@@ -91,7 +126,7 @@ public class BossControl : NetworkBehaviour
             if (randomMovementOn)
             {
                 CancelInvoke("ChangeMovement");
-                InvokeRepeating("Fire", 0, fireRate);
+                InvokeRepeating("Fire", 0, fireRate*customScale(level.Value));
                 randomMovementOn = false;
             }
 
@@ -130,8 +165,8 @@ public class BossControl : NetworkBehaviour
             return;
         }
 
-        //stupid but works 
-        SetHpServerRpc();
+        SetLevelServerRPC();
+        SetHpServerRpc(0,true);
         DecreaseHpClientRpc(health.Value);
         NetworkObject.Despawn();
     }
@@ -159,16 +194,12 @@ public class BossControl : NetworkBehaviour
         }
 
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        for (int i = 0; i < players.Length; i++)
-        {
-            FireServerRpc(i);
-        }
+        FireServerRpc();
     }
 
     [ServerRpc]
-    void FireServerRpc(int i)
+    void FireServerRpc()
     {
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
         GameObject bullet = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
         bullet.transform.position = transform.position;
         bullet.transform.rotation = transform.rotation;
@@ -213,16 +244,24 @@ public class BossControl : NetworkBehaviour
     void DecreaseHpClientRpc(int currentHealth)
     {
         int healthBarWidth = 220;
-        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth * currentHealth) / maxHealth, 10);
+        healthBar.rectTransform.sizeDelta = new Vector2((healthBarWidth * currentHealth) / maxHealth.Value, 10);
         byte maxByteValue = 255;
-        byte green = (byte) ((maxByteValue * currentHealth) / maxHealth);
+        byte green = (byte) ((maxByteValue * currentHealth) / maxHealth.Value);
         healthBar.color = new Color32((byte) (maxByteValue - green), green, 0, maxByteValue);
     }
 
     [ServerRpc]
-    void SetHpServerRpc()
+    void SetHpServerRpc(int hp,bool max=false)
     {
-        health.Value = maxHealth;
+        maxHealth.Value = adjustedMaxHealth();
+        if (max)
+        {
+            health.Value = maxHealth.Value;
+        }
+        else
+        {
+            health.Value = hp;
+        }
     }
 
     void ChangeMovement()
