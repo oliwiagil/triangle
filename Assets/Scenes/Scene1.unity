@@ -688,18 +688,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnDelay: 0
-  spawnTime: 3
+  spawnTime: 2
   EnemyPrefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
   BossPrefab: {fileID: 6849578213420337101, guid: 90b8d252d0f4c8850895896ce6af817d, type: 3}
   BoxPrefabMul: {fileID: 95554961437044780, guid: f582a99f77d7af138b7312039e9ff710, type: 3}
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 9c9fbfacc89d740408bd73973755ef5b, type: 3}
-  roomSize: 19
-  doorSize: 5
-  roomsInRow: 3
-  WasBossSpawned: 0
-  obstacleProbability: 0.56
-  wallProbability: 0.75
+  roomSize: 25
+  doorSize: 11
+  roomsInRow: 5
+  obstacleProbability: 0.54
+  wallProbability: 0.6
 --- !u!4 &2027122272
 Transform:
   m_ObjectHideFlags: 0

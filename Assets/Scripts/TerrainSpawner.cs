@@ -21,9 +21,9 @@ public class TerrainSpawner : NetworkBehaviour{
     public int roomSize=21;
     public int doorSize=5;
     public int roomsInRow=7;
-    public bool WasBossSpawned = false;
     public float obstacleProbability=0.57f;
     public float wallProbability=0.75f;
+    private bool WasBossSpawned = false;
     private Random random=null;
     private Random initRandom;
 	private int MaxNumberOfEnemies = 15;

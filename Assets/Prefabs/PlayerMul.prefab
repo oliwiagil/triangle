@@ -145,7 +145,7 @@ MonoBehaviour:
     m_InternalValue: 0
   speed: 10
   fireRate: 0.25
-  bulletForce: 8
+  bulletForce: 15
   PlayerName:
     m_InternalValue:
       utf8LengthInBytes: 0
