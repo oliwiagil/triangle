@@ -177,7 +177,6 @@ public class TerrainSpawner : NetworkBehaviour{
                     box_y = localRand.Next(cords[0, 1], cords[1, 1] + 1);
                 }
 
-                Debug.Log(box_x + " box_x " + box_y + " box_y");
                 GameObject box = m_ObjectPool.GetNetworkObject(BoxPrefabMul,
                     new Vector3(box_x + mapOffset, box_y + mapOffset, 0), new Quaternion(0, 0, 0, 0)).gameObject;
                 box.GetComponent<BoxControlMul>().color.Value = clientId;
@@ -190,13 +189,11 @@ public class TerrainSpawner : NetworkBehaviour{
     [ClientRpc]
     void recieveSeedClientRPC(int newSeed)
     {
-        Debug.Log("Server called"+OwnerClientId+" "+newSeed);
         onSeedChange(newSeed);
     }
     [ServerRpc(RequireOwnership = false)]
     public void requestSendSeedServerRPC()
     {
-        Debug.Log("player asked");
         recieveSeedClientRPC(seed);
     }
     [ServerRpc(RequireOwnership = false)]

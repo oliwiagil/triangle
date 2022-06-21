@@ -95,11 +95,6 @@ public class NetworkManagerHud : MonoBehaviour
 
         GUILayout.BeginHorizontal();
 
-        if (GUILayout.Button("Server"))
-        {
-            m_NetworkManager.StartServer();
-        }
-
         if (GUILayout.Button("Client"))
         {
             m_NetworkManager.StartClient();
@@ -126,6 +121,7 @@ public class NetworkManagerHud : MonoBehaviour
         if (GUILayout.Button("Shutdown"))
         {
             m_NetworkManager.Shutdown();
+            Application.Quit();
         }
     }
 
