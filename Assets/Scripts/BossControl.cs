@@ -134,8 +134,6 @@ public class BossControl : NetworkBehaviour
         SetHpServerRpc();
         DecreaseHpClientRpc(health.Value);
         NetworkObject.Despawn();
-		GameObject[] boss = GameObject.FindGameObjectsWithTag("Boss");
-		boss[0].SetActive(false);
     }
 
     void OnTriggerEnter2D(Collider2D other)
@@ -186,6 +184,22 @@ public class BossControl : NetworkBehaviour
         rb2.AddForce(transform.up * -bulletForce, ForceMode2D.Impulse);
         Physics2D.IgnoreCollision(bullet2.GetComponent<Collider2D>(), GetComponent<Collider2D>());
         bullet2.GetComponent<NetworkObject>().Spawn(true);
+		
+		GameObject bullet3 = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
+        bullet3.transform.position = transform.position;
+        bullet3.transform.rotation = transform.rotation;
+        Rigidbody2D rb3 = bullet3.GetComponent<Rigidbody2D>();
+        rb3.AddForce(transform.right * bulletForce, ForceMode2D.Impulse);
+        Physics2D.IgnoreCollision(bullet3.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+        bullet3.GetComponent<NetworkObject>().Spawn(true);
+
+		GameObject bullet4 = m_ObjectPool.GetNetworkObject(BulletPrefab).gameObject;
+        bullet4.transform.position = transform.position;
+        bullet4.transform.rotation = transform.rotation;
+        Rigidbody2D rb4 = bullet4.GetComponent<Rigidbody2D>();
+        rb4.AddForce(transform.right * -bulletForce, ForceMode2D.Impulse);
+        Physics2D.IgnoreCollision(bullet4.GetComponent<Collider2D>(), GetComponent<Collider2D>());
+        bullet4.GetComponent<NetworkObject>().Spawn(true);
     }
 
     [ServerRpc]
