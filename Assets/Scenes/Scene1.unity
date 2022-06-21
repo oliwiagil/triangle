@@ -162,6 +162,10 @@ MonoBehaviour:
     PrewarmCount: 0
   - Prefab: {fileID: 95554961437044780, guid: f582a99f77d7af138b7312039e9ff710, type: 3}
     PrewarmCount: 0
+  - Prefab: {fileID: 6849578213420337101, guid: 90b8d252d0f4c8850895896ce6af817d, type: 3}
+    PrewarmCount: 0
+  - Prefab: {fileID: 5548520810432284154, guid: 5a60a3a987c3b89cdb08133cc9423509, type: 3}
+    PrewarmCount: 0
 --- !u!4 &371565334
 Transform:
   m_ObjectHideFlags: 0
@@ -425,43 +429,13 @@ RectTransform:
   m_Children:
   - {fileID: 707053295}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 0, y: 0}
   m_Pivot: {x: 0, y: 0}
---- !u!1 &1047674413
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1047674414}
-  m_Layer: 0
-  m_Name: EnemySpawner
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1047674414
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1047674413}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.23, y: 3.14, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 3
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1303031859
 GameObject:
   m_ObjectHideFlags: 0
@@ -560,6 +534,16 @@ MonoBehaviour:
       OverridingTargetPrefab: {fileID: 0}
     - Override: 0
       Prefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
+      SourcePrefabToOverride: {fileID: 0}
+      SourceHashToOverride: 0
+      OverridingTargetPrefab: {fileID: 0}
+    - Override: 0
+      Prefab: {fileID: 6849578213420337101, guid: 90b8d252d0f4c8850895896ce6af817d, type: 3}
+      SourcePrefabToOverride: {fileID: 0}
+      SourceHashToOverride: 0
+      OverridingTargetPrefab: {fileID: 0}
+    - Override: 0
+      Prefab: {fileID: 5548520810432284154, guid: 5a60a3a987c3b89cdb08133cc9423509, type: 3}
       SourcePrefabToOverride: {fileID: 0}
       SourceHashToOverride: 0
       OverridingTargetPrefab: {fileID: 0}
@@ -671,7 +655,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &2027122270
 GameObject:
@@ -706,12 +690,14 @@ MonoBehaviour:
   spawnDelay: 0
   spawnTime: 3
   EnemyPrefab: {fileID: 2335235116876632915, guid: 36f272d97c7978e4dae7e4b2b1a5b299, type: 3}
+  BossPrefab: {fileID: 6849578213420337101, guid: 90b8d252d0f4c8850895896ce6af817d, type: 3}
   BoxPrefabMul: {fileID: 95554961437044780, guid: f582a99f77d7af138b7312039e9ff710, type: 3}
   initialServerSeed: 7312
   ObstaclePrefab: {fileID: 5019422062460965281, guid: 9c9fbfacc89d740408bd73973755ef5b, type: 3}
   roomSize: 19
   doorSize: 5
-  roomsInRow: 7
+  roomsInRow: 3
+  WasBossSpawned: 0
   obstacleProbability: 0.56
   wallProbability: 0.75
 --- !u!4 &2027122272
@@ -726,7 +712,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &2027122273
 MonoBehaviour:

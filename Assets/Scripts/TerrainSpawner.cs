@@ -11,6 +11,7 @@ public class TerrainSpawner : NetworkBehaviour{
     public float spawnTime;
     NetworkObjectPool m_ObjectPool;
     public GameObject EnemyPrefab;
+    public GameObject BossPrefab;
 	public GameObject BoxPrefabMul;
     private float scale = 10f;
     private float range = 256;
@@ -20,6 +21,7 @@ public class TerrainSpawner : NetworkBehaviour{
     public int roomSize=21;
     public int doorSize=5;
     public int roomsInRow=7;
+    public bool WasBossSpawned = false;
     public float obstacleProbability=0.57f;
     public float wallProbability=0.75f;
     private Random random=null;
@@ -115,6 +117,14 @@ public class TerrainSpawner : NetworkBehaviour{
 			enemy.GetComponent<NetworkObject>().Spawn(true);
         }
     }
+    void addBoss()
+    {
+        if (!NetworkManager.Singleton.IsServer){ return; }
+
+        GameObject boss = m_ObjectPool.GetNetworkObject(BossPrefab, new Vector3(0, 0,0), new Quaternion(0,0,0,0)).gameObject;
+        boss.GetComponent<NetworkObject>().Spawn(true);
+        
+    }
     public void onSeedChange(int newSeed)
     {
         //Debug.Log("new seed!!!");
@@ -196,6 +206,7 @@ public class TerrainSpawner : NetworkBehaviour{
         //if (!NetworkManager.Singleton.IsServer){ return; }
         int newSeed = Math.Abs(initRandom.Next());
 		destroyEnemies();
+        destroyBoss();
 		destroyBoxes();
         onSeedChange(newSeed);
         recieveSeedClientRPC(newSeed);
@@ -230,6 +241,16 @@ public class TerrainSpawner : NetworkBehaviour{
 			Destroy(enemy);
 		}
 	}
+    private void destroyBoss()
+    {
+        WasBossSpawned = false;
+        if(!NetworkManager.Singleton.IsServer){ return;}
+        GameObject[] enemies = GameObject.FindGameObjectsWithTag("Boss");
+        foreach(GameObject target in enemies)
+        {
+            Destroy(target);
+        }
+    }
 
 	private void destroyBoxes()
 	{
@@ -270,13 +291,21 @@ public class TerrainSpawner : NetworkBehaviour{
 			}
 
 			//Debug.Log(level);
-			GameObject[] boxes = GameObject.FindGameObjectsWithTag("Box");
-			if(boxes.Length == 0)
-			{
-				level += 1;
-				MaxNumberOfEnemies = 15 * currentPlayers + 10 * level;
-				requestSendNewSeedServerRPC();
-			}
+            GameObject[] boxes = GameObject.FindGameObjectsWithTag("Box");
+            GameObject[] boss = GameObject.FindGameObjectsWithTag("Boss");
+            //Debug.Log(WasBossSpawned);
+            if(boxes.Length == 0 && boss.Length == 0 && WasBossSpawned == false)
+            {
+                addBoss();
+                WasBossSpawned = true;
+            }
+            boss = GameObject.FindGameObjectsWithTag("Boss");
+            if (boss.Length == 0 && boxes.Length == 0)
+            {
+                level += 1;
+                MaxNumberOfEnemies = 15 * currentPlayers + 10 * level;
+                requestSendNewSeedServerRPC();
+            }
 			
         }
         if (NetworkManager.Singleton.IsConnectedClient)
